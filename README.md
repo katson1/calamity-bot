@@ -1,2 +1,2 @@
 # calamity-bot
-A bot who draft maps for a toornament of Heroes Of The Storm
+A bot who draft maps for a Heroes Of The Storm tournament.

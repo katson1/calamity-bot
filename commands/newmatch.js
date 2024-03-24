@@ -49,7 +49,7 @@ export default {
         const buttonsRow = new ActionRowBuilder().addComponents(joinButton, leaveButton);
 
         await interaction.reply({
-            embeds: [embedMention(interaction.user), embedRegistration(team1Role, team1Member, team2Role, team2Member)],
+            embeds: [embedMention(interaction.user, system), embedRegistration(team1Role, team1Member, team2Role, team2Member)],
             components: [buttonsRow],
             fetchReply: true
         });
@@ -67,17 +67,20 @@ export default {
                 if (member.roles.cache.has(team1Role.id)) {
                     if (team1Member) {
                         errorMessage = 'Team 1 already have a captain.';
+                        await i.reply({ content: errorMessage, ephemeral: true });
                     } else {
                         team1Member = i.user;
                     }
                 } else if (member.roles.cache.has(team2Role.id)) {
                     if (team2Member) {
                         errorMessage = 'Team 2 already have a captain.';
+                        await i.reply({ content: errorMessage, ephemeral: true });
                     } else {
                         team2Member = i.user;
                     }
                 } else {
                     errorMessage = 'You do not have the necessary role to participate!';
+                    await i.reply({ content: errorMessage, ephemeral: true });
                 }
             } else if (i.customId === 'leave_match') {
                 if (team1Member && team1Member.id === i.user.id) {
@@ -86,7 +89,22 @@ export default {
                     team2Member = null;
                 } else {
                     errorMessage = 'You are not registered in any team.';
+                    await i.reply({ content: errorMessage, ephemeral: true });
                 }
+            }
+        
+            // Verifica se ambos os times estão completos
+            if (team1Member && team2Member) {
+                // Ambos os times estão completos, proceder com a seleção para "first pick" ou escolha de mapa
+                const chosenTeam = Math.random() < 0.5 ? team1Member : team2Member; // Escolhe um time aleatoriamente
+        
+                // Apaga a mensagem original
+                await i.message.delete();
+        
+                // Enviar nova mensagem ou ação para o time escolhido
+                const chosenAction = 'first pick'; // ou 'map', dependendo de sua lógica de jogo
+                await i.channel.send(`${chosenTeam.username} foi escolhido para ${chosenAction}. Por favor, selecione...`);
+                return; // Parar execução para não tentar responder a interação que já foi finalizada
             }
         
             if (errorMessage !== '') {

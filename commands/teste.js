@@ -3,7 +3,7 @@ import { getEmbed } from "../utils/embed.js";
 
 export default {
     data: new SlashCommandBuilder()
-        .setName("newmatch")
+        .setName("teste")
         .setDescription("Start a new match")
         .addStringOption(option =>
             option.setName('system')

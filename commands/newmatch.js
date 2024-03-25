@@ -33,8 +33,8 @@ export default {
         const team2Role = interaction.options.getRole('team_2');
         const system = interaction.options.getString('system');
 
-        let team1Member = null;
-        let team2Member = null;
+        var team1Member = null;
+        var team2Member = null;
 
         const joinButton = new ButtonBuilder()
             .setCustomId("join_match")

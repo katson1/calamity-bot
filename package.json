@@ -1,0 +1,19 @@
+{
+  "name": "calamity-bot",
+  "version": "1.0.0",
+  "description": "A bot who draft maps for a toornament of Heroes Of The Storm",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node ./deploy-commands.js && node ./index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Katson Matheus (github.com/katson1)",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.5",
+    "mongoose": "^8.2.3"
+  }
+}

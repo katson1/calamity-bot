@@ -1,6 +1,8 @@
 import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, InteractionCollector } from "discord.js";
 import { getEmbed, getEmbedDev } from "../utils/embed.js";
 
+
+
 export default {
     data: new SlashCommandBuilder()
         .setName("newmatch")
@@ -34,6 +36,10 @@ export default {
         const system = interaction.options.getString('system');
 
         var bans = 0;
+        var firstPick = '';
+        var mapPick = '';
+        var banCount = 0;
+
         switch (system) {
             case 'Bo1':
                 bans = 4;
@@ -111,7 +117,8 @@ export default {
 
             if (team1Member && team2Member) {
                 const chosenTeam = Math.random() < 0.5 ? team1Member : team2Member;
-                console.log(chosenTeam);
+                const notChosenTeam = chosenTeam === team1Member ? team2Member : team1Member;
+
                 const fpButton = new ButtonBuilder()
                     .setCustomId("fp")
                     .setLabel(`First Pick`)
@@ -140,27 +147,75 @@ export default {
                     const member = await interaction.guild.members.fetch(i.user.id);
                     const fpmap = i.customId;
 
+                    firstPick = (fpmap === 'fp') ? chosenTeam.globalName : notChosenTeam.globalName;
+                    mapPick = (fpmap === 'map') ? chosenTeam.globalName : notChosenTeam.globalName;
+
                     const bansEmbed = getEmbed();
                     bansEmbed.title = "Map bans";
-                    bansEmbed.description = `Lets ban the maps! Please select:`;
+                    bansEmbed.description = `Please select a map to ban:`;
 
-                    if (fpmap === 'fp') {
-                        await i.update({
-                            embeds: [embedRegistration(team1Role, team1Member, team2Role, team2Member, 2, system, bans, fpmap, chosenTeam.globalName), bansEmbed, getEmbedDev()],
-                            components: [] // Optionally remove buttons if no further interaction is needed
-                        });
-                        return; // Exit the collector callback
-                    } else if (fpmap === 'map') {
-                
-                        await i.update({
-                            embeds: [embedRegistration(team1Role, team1Member, team2Role, team2Member, 2, system, bans, fpmap, chosenTeam.globalName), bansEmbed, getEmbedDev()],
-                            components: [] // Optionally remove buttons if no further interaction is needed
-                        });
-                        return; // Exit the collector callback
+                    const maps = [
+                        "Alterac Pass", "Battlefield of Eternity", "Braxis Holdout", "Cursed Hollow", "Dragon Shire", 
+                        "Garden of Terror", "Hanamura Temple", "Infernal Shrines", "Sky Temple", 
+                        "Tomb of the Spider Queen", "Towers of Doom", "Volskaya Foundry"
+                    ];
+
+                    let actionRows = [];
+                    let row = new ActionRowBuilder();
+                    
+                    maps.forEach((mapName, index) => {
+                        const button = createMapButton(mapName);
+                        
+                        if (index % 4 === 0 && index !== 0) {
+                            actionRows.push(row);
+                            row = new ActionRowBuilder();
+                        }
+                        row.addComponents(button);
+                    });
+                    
+                    if (row.components.length > 0) {
+                        actionRows.push(row);
                     }
+
+                    await i.update({
+                        embeds: [
+                            embedRegistration(team1Role, team1Member, team2Role, team2Member, 2, system, bans, firstPick, mapPick), 
+                            bansEmbed, 
+                            getEmbedDev()
+                        ],
+                        components: actionRows
+                    });
+
+                    const filter = (i) => i.isButton() && i.customId.match(/^[a-z]+(_[a-z]+)*$/);
+
+                    const collectorBans = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
+
+                    collectorBans.on('collect', async (interaction) => {
+                        const mapName = interaction.customId.replace(/_/g, ' ');
+
+                        actionRows = actionRows.map(row => {
+                            const updatedComponents = row.components.map(button => {
+                                if(button.data.custom_id === interaction.customId) {
+                                    const updatedButtonData = { ...button.data, disabled: true };
+                                    return new ButtonBuilder(updatedButtonData);
+                                }
+                                return button;
+                            });
+                    
+                            return new ActionRowBuilder().addComponents(updatedComponents);
+                        });
+
+                        if (banCount >= bans) {
+                            console.log("map pick");
+                        }
+
+                        await interaction.update({
+                        content: `You selected ${mapName}.`, // Example confirmation message
+                        components: actionRows // Optionally clear the buttons after selection
+                        });
+
+                    });
                 
-                    // Existing logic for join_match and leave_match buttons...
-                    // Ensure you place your existing join_match and leave_match handling code here
                 });
 
             } else {
@@ -186,9 +241,9 @@ const embedMention = (user, system) => {
     return embed;
 }
 
-const embedRegistration = (team1Role, team1Member, team2Role, team2Member, description, system, bans, fpmap, tossCoinWinner) => {
+const embedRegistration = (team1Role, team1Member, team2Role, team2Member, description, system, bans, fp, map) => {
     const embed = getEmbed();
-    embed.title = `Match **${team1Role.name}** vs **${team2Role.name}**`;
+    embed.title = `Match: **${team1Role.name}** vs **${team2Role.name}**`;
     if (description == 1) {
         embed.description = `Captains, click \`join\` to represent your team.`;
     } else {
@@ -204,14 +259,21 @@ const embedRegistration = (team1Role, team1Member, team2Role, team2Member, descr
         { name: 'Team 2', value: team2Status, inline: true },
     );
 
-    if (fpmap == 'fp') {
+
+    if(fp && map){
         embed.fields.push(
-            { name: `\u200b`, value: `${tossCoinWinner} won the toss coin and selected: \`First Pick\``, inline: false }
-        );
-    } else if (fpmap == 'map') {    embed.fields.push(
-            { name: `\u200b`, value: `${tossCoinWinner} won the toss coin and selected: \`Map\``, inline: false }
+            { name: `\u200b`, value: `\`First Pick\`: ${fp}`, inline: false },
+            { name: ``, value: `\`Map\`: ${map}`, inline: false }
         );
     }
 
+
     return embed;
+}
+
+function createMapButton(mapName) {
+    return new ButtonBuilder()
+        .setCustomId(mapName.toLowerCase().replace(/\s+/g, '_'))
+        .setLabel(mapName)
+        .setStyle(ButtonStyle.Danger);
 }

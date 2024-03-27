@@ -32,10 +32,6 @@ const rest = new REST({ version: "10" }).setToken(TOKEN);
             { body: commands }
         );
 
-        const teste = await rest.get(
-            Routes.applicationCommands(CLIENT_ID)
-        );
-
         console.log("Commands registered successfully!");
 
     } catch (error) {

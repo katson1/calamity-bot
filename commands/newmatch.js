@@ -1,7 +1,5 @@
-import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, InteractionCollector } from "discord.js";
+import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import { getEmbed, getEmbedDev } from "../utils/embed.js";
-
-
 
 export default {
     data: new SlashCommandBuilder()
@@ -36,9 +34,24 @@ export default {
         const system = interaction.options.getString('system');
 
         var bans = 0;
-        var firstPick = '';
-        var mapPick = '';
         var banCount = 0;
+        var currentBanUser = '';
+        var noCurrentBanUser = '';
+        var team1Bans = {
+            role: team1Role,
+            user: null,
+            mapsBanned: [],
+            fp: false,
+            map: false
+        };
+        
+        var team2Bans = {
+            role: team2Role,
+            user: null,
+            mapsBanned: [],
+            fp: false,
+            map: false
+        };
 
         switch (system) {
             case 'Bo1':
@@ -82,11 +95,11 @@ export default {
 
         const filter = (i) => ['join_match', 'leave_match'].includes(i.customId);
 
-        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
+        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 300000 });
 
         collector.on('collect', async (i) => {
             const member = await interaction.guild.members.fetch(i.user.id);
-
+           
             let errorMessage = '';
 
             if (i.customId === 'join_match') {
@@ -116,8 +129,11 @@ export default {
             }
 
             if (team1Member && team2Member) {
+
+                team1Bans.user = team1Member;
+                team2Bans.user = team2Member;
+
                 const chosenTeam = Math.random() < 0.5 ? team1Member : team2Member;
-                const notChosenTeam = chosenTeam === team1Member ? team2Member : team1Member;
 
                 const fpButton = new ButtonBuilder()
                     .setCustomId("fp")
@@ -133,7 +149,7 @@ export default {
 
                 const completionEmbed = getEmbed();
                 completionEmbed.title = "Toss coin:";
-                completionEmbed.description = `Toss coin: ${chosenTeam.globalName} won. ${chosenTeam.globalName}, please select:`;
+                completionEmbed.description = `${chosenTeam} won the toss coin! ${chosenTeam}, please select:`;
 
                 await i.update({
                     embeds: [embedMention(interaction.user, system), embedRegistration(team1Role, team1Member, team2Role, team2Member, 2, system, bans), completionEmbed, getEmbedDev()],
@@ -141,19 +157,43 @@ export default {
                 });
 
                 const filter = (i) => ['join_match', 'leave_match', 'fp', 'map'].includes(i.customId);
-                const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
+                const collector = interaction.channel.createMessageComponentCollector({ filter, time: 300000 });
 
                 collector.on('collect', async (i) => {
+
+                    if (i.user.id !== chosenTeam.id) {
+                        await i.reply({
+                            content: "You are not authorized to do this action at this time!",
+                            ephemeral: true
+                        });
+                        return;
+                    }
+
                     const member = await interaction.guild.members.fetch(i.user.id);
                     const fpmap = i.customId;
 
-                    firstPick = (fpmap === 'fp') ? chosenTeam.globalName : notChosenTeam.globalName;
-                    mapPick = (fpmap === 'map') ? chosenTeam.globalName : notChosenTeam.globalName;
-
-                    const bansEmbed = getEmbed();
-                    bansEmbed.title = "Map bans";
-                    bansEmbed.description = `Please select a map to ban:`;
-
+                    if (fpmap === 'fp') {
+                        if (chosenTeam === team1Member) {
+                            team1Bans.fp = true;
+                            team2Bans.map = true;
+                            currentBanUser = team2Bans.user;
+                        } else {
+                            team2Bans.fp = true;
+                            team1Bans.map = true;
+                            currentBanUser = team1Bans.user;
+                        }
+                    } else if (fpmap === 'map') {
+                        if (chosenTeam === team1Member) {
+                            team1Bans.map = true;
+                            team2Bans.fp = true;
+                            currentBanUser = team1Bans.user;
+                        } else {
+                            team2Bans.map = true;
+                            team1Bans.fp = true;
+                            currentBanUser = team2Bans.user;
+                        }
+                    }
+                    
                     const maps = [
                         "Alterac Pass", "Battlefield of Eternity", "Braxis Holdout", "Cursed Hollow", "Dragon Shire", 
                         "Garden of Terror", "Hanamura Temple", "Infernal Shrines", "Sky Temple", 
@@ -178,20 +218,26 @@ export default {
                     }
 
                     await i.update({
-                        embeds: [
-                            embedRegistration(team1Role, team1Member, team2Role, team2Member, 2, system, bans, firstPick, mapPick), 
-                            bansEmbed, 
-                            getEmbedDev()
-                        ],
+                        embeds: [embedRegistration(team1Role, team1Member, team2Role, team2Member, 2, system, bans, team1Bans, team2Bans), createBansEmbed(currentBanUser), getEmbedDev()],
                         components: actionRows
                     });
 
                     const filter = (i) => i.isButton() && i.customId.match(/^[a-z]+(_[a-z]+)*$/);
 
-                    const collectorBans = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
+                    const collectorBans = interaction.channel.createMessageComponentCollector({ filter, time: 300000 });
 
                     collectorBans.on('collect', async (interaction) => {
-                        const mapName = interaction.customId.replace(/_/g, ' ');
+
+                        if (interaction.user.id !== currentBanUser.id) {
+                            await interaction.reply({
+                                content: "You are not authorized to do this action at this time!",
+                                ephemeral: true
+                            });
+                            return;
+                        }
+
+                        let mapName = interaction.customId.replace(/_/g, ' ');
+                        mapName = mapName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
                         actionRows = actionRows.map(row => {
                             const updatedComponents = row.components.map(button => {
@@ -205,15 +251,28 @@ export default {
                             return new ActionRowBuilder().addComponents(updatedComponents);
                         });
 
-                        if (banCount >= bans) {
-                            console.log("map pick");
+                        banCount = banCount + 1;
+                        currentBanUser = (currentBanUser === team1Member) ? team2Member : team1Member;
+                        noCurrentBanUser = (currentBanUser === team1Member) ? team2Member : team1Member;
+
+                        const member = await interaction.guild.members.fetch(currentBanUser.id);
+                        if(member.roles.cache.has(team2Bans.role.id)){
+                            team1Bans.mapsBanned.push(mapName);
+                        } else if (member.roles.cache.has(team1Bans.role.id)) {
+                            team2Bans.mapsBanned.push(mapName);
                         }
 
-                        await interaction.update({
-                        content: `You selected ${mapName}.`, // Example confirmation message
-                        components: actionRows // Optionally clear the buttons after selection
-                        });
-
+                        if (banCount >= bans) {
+                            await interaction.update({
+                                embeds: [embedRegistration(team1Role, team1Member, team2Role, team2Member, 2, system, bans, team1Bans, team2Bans), getEmbedDev()],
+                                components: []
+                            });
+                        } else {
+                            await interaction.update({
+                                embeds: [createMapBanned(noCurrentBanUser, mapName), embedRegistration(team1Role, team1Member, team2Role, team2Member, 2, system, bans, team1Bans, team2Bans), createBansEmbed(currentBanUser), getEmbedDev()],
+                                components: actionRows
+                            });
+                        }
                     });
                 
                 });
@@ -241,7 +300,7 @@ const embedMention = (user, system) => {
     return embed;
 }
 
-const embedRegistration = (team1Role, team1Member, team2Role, team2Member, description, system, bans, fp, map) => {
+const embedRegistration = (team1Role, team1Member, team2Role, team2Member, description, system, bans, team1Bans, team2Bans) => {
     const embed = getEmbed();
     embed.title = `Match: **${team1Role.name}** vs **${team2Role.name}**`;
     if (description == 1) {
@@ -260,13 +319,36 @@ const embedRegistration = (team1Role, team1Member, team2Role, team2Member, descr
     );
 
 
-    if(fp && map){
-        embed.fields.push(
-            { name: `\u200b`, value: `\`First Pick\`: ${fp}`, inline: false },
-            { name: ``, value: `\`Map\`: ${map}`, inline: false }
-        );
+    if(team1Bans || team2Bans){
+        if(team1Bans.fp){
+            embed.fields.push(
+                { name: `\u200b`, value: `First Pick: \`${team1Bans.role.name} (${team1Bans.user.globalName})\``, inline: false },
+                { name: ``, value: `Map: \`${team2Bans.role.name} (${team2Bans.user.globalName})\``, inline: false }
+            );
+        } 
+        if(team2Bans.fp){
+            embed.fields.push(
+                { name: `\u200b`, value: `First Pick: \`${team2Bans.role.name} (${team2Bans.user.globalName})\``, inline: false },
+                { name: ``, value: `Map: \`${team1Bans.role.name} (${team1Bans.user.globalName})\``, inline: false }
+            );
+        } 
+        embed.fields.push({ name: `\u200b`, value: ``, inline: false })
     }
 
+    if (team1Bans && team1Bans.mapsBanned.length > 0) {
+        const mapsBannedString = team1Bans.mapsBanned.join(', ');
+        embed.fields.push(
+            { name: `${team1Bans.role.name} bans:`, value: `\`${mapsBannedString}\`` }
+        );
+    }
+    
+    if (team2Bans && team2Bans.mapsBanned.length > 0) {
+        const mapsBannedString = team2Bans.mapsBanned.join(', ');
+        embed.fields.push(
+            { name: `${team2Bans.role.name} bans:`, value: `\`${mapsBannedString}\``  }
+        );
+    }
+    
 
     return embed;
 }
@@ -276,4 +358,17 @@ function createMapButton(mapName) {
         .setCustomId(mapName.toLowerCase().replace(/\s+/g, '_'))
         .setLabel(mapName)
         .setStyle(ButtonStyle.Danger);
+}
+
+function createBansEmbed(currentBanUser) {
+    const bansEmbed = getEmbed();
+    bansEmbed.title = "Map bans";
+    bansEmbed.description = `${currentBanUser}, please select a map to ban:`;
+    return bansEmbed;
+}
+
+function createMapBanned(currentBanUser, banned) {
+    const bansEmbed = getEmbed();
+    bansEmbed.description = `${currentBanUser}, has banned: **${banned}**`;
+    return bansEmbed;
 }

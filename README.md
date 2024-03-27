@@ -73,6 +73,7 @@ Click on New Applcation and give it a cool name.
 On the **General Information** tab copy the APPLICATION ID and past on the CLIENT_ID variable on .env file, live this example: 
 
   ```.env
+MONGODB_CONNECT=mongodb://localhost:27017/yourDatabaseName
 TOKEN=
 CLIENT_ID=0123456789876543210
   ```
@@ -82,6 +83,7 @@ Copy the `token` to the .env file:
 
 The `.env` file should be like this example:
   ```.env
+MONGODB_CONNECT=mongodb://localhost:27017/yourDatabaseName
 TOKEN=EXAMPLE01234TOKEN
 CLIENT_ID=0123456789876543210
   ```

@@ -35,7 +35,7 @@ export default {
         const system = interaction.options.getString('system');
 
         const matchSetup = new MatchSetup(team1Role, team2Role);
-
+        matchSetup.startBanPhase();
 
         var games = [];
 
@@ -46,13 +46,10 @@ export default {
             fp: null
         }
 
-        var winner = null;
         var bans = 0;
-        var isBo7 = false;
         var banCount = 0;
         var currentBanUser = '';
         var noCurrentBanUser = '';
-        var banPhaseFlag = true;
         var pickingTeam = null;
         var team1Controller = {
             role: team1Role,
@@ -88,8 +85,8 @@ export default {
                 matchSetup.totalWinsToFinish = 3;
                 break;
             case 'Bo7':
-                isBo7 = true;
                 bans = 2;
+                matchSetup.isBo7 = true;
                 matchSetup.totalWinsToFinish = 4;
                 break;
             default:
@@ -237,7 +234,7 @@ export default {
 
                     collectorBans.on('collect', async (interaction) => {
 
-                        if (banPhaseFlag) {
+                        if (matchSetup.banPhaseFlag) {
 
                             if (interaction.user.id !== currentBanUser.id) {
                                 await interaction.reply({
@@ -274,10 +271,12 @@ export default {
                             }
 
                             if (banCount >= bans) {
-                                banPhaseFlag = false;
                                 var availableMaps = updateAvailableMaps(maps, team1Controller, team2Controller);
                                 var pickMapsRows = generateActionRowsForMaps(availableMaps, ButtonStyle.Success);
                                 pickingTeam = team2Controller.map ? team2Member : team1Member;
+
+                                matchSetup.startPickPhase();
+
                                 await interaction.update({
                                     embeds: [embedRegistration(team1Role, team1Member, team2Role, team2Member, 2, system, bans, team1Controller, team2Controller), createPicksEmbed(pickingTeam), getEmbedDev()],
                                     components: pickMapsRows

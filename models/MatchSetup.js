@@ -108,4 +108,29 @@ export class MatchSetup {
         }
     }
 
+    setMode(mode){
+        switch (mode) {
+            case 'Bo1':
+            case 'Bo2':
+                this.bans = 4;
+                this.totalWinsToFinish = 1;
+                break;
+            case 'Bo3':
+                this.bans = 4;
+                this.totalWinsToFinish = 2;
+                break;
+            case 'Bo5':
+                this.bans = 2;
+                this.totalWinsToFinish = 3;
+                break;
+            case 'Bo7':
+                this.bans = 2;
+                this.isBo7 = true;
+                this.totalWinsToFinish = 4;
+                break;
+            default:
+                console.log(`?`);
+        }
+    }
+
 }

@@ -67,31 +67,8 @@ export default {
             map: false
         };
 
-
-        switch (system) {
-            case 'Bo1':
-                bans = 4;
-                matchSetup.totalWinsToFinish = 1;
-                break;
-            case 'Bo2':
-                bans = 4;
-                matchSetup.totalWinsToFinish = 1;
-            case 'Bo3':
-                bans = 4;
-                matchSetup.totalWinsToFinish = 2;
-                break;
-            case 'Bo5':
-                bans = 2;
-                matchSetup.totalWinsToFinish = 3;
-                break;
-            case 'Bo7':
-                bans = 2;
-                matchSetup.isBo7 = true;
-                matchSetup.totalWinsToFinish = 4;
-                break;
-            default:
-                console.log(`?`);
-        }
+        matchSetup.setMode(system);
+        bans = matchSetup.bans;
 
         var team1Member = null;
         var team2Member = null;

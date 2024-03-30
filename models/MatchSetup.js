@@ -4,11 +4,12 @@ export class MatchSetup {
         this.bans = 0;
         this.isBo7 = false;
         this.banCount = 0;
-        this.currentBanUser = null;
-        this.noCurrentBanUser = null;
+        this.currentBanUser = '';
+        this.noCurrentBanUser = '';
         this.banPhaseFlag = true;
         this.pickingTeam = null;
-        var totalWinsToFinish = 0;
+        this.mode;
+        this.totalWinsToFinish = 0;
         this.team1Controller = {
             role: team1Role,
             user: null,
@@ -68,47 +69,48 @@ export class MatchSetup {
 
     getTeamFp() {
         if (this.team1Controller.fp) {
-            return team1Controller;
+            return this.team1Controller;
         } else if (this.team2Controller.fp) {
-            return team2Controller;
+            return this.team2Controller;
         }
         return null;
     }
     
     getTeamMap() {
         if (this.team1Controller.map) {
-            return team1Controller;
+            return this.team1Controller;
         } else if (this.team2Controller.map) {
-            return team2Controller;
+            return this.team2Controller;
         }
         return null;
     }
 
     setFirstPickAndMap(fpmap, chosenTeam){
         if (fpmap === 'fp') {
-            if (chosenTeam === team1Controller.user) {
+            if (chosenTeam === this.team1Controller.user) {
                 this.team1Controller.fp = true;
                 this.team2Controller.map = true;
-                this.currentBanUser = team2Controller.user;
+                this.currentBanUser = this.team2Controller.user;
             } else {
                 this.team2Controller.fp = true;
                 this.team1Controller.map = true;
-                this.currentBanUser = team1Controller.user;
+                this.currentBanUser = this.team1Controller.user;
             }
         } else if (fpmap === 'map') {
-            if (chosenTeam === team1Controller.user) {
+            if (chosenTeam === this.team1Controller.user) {
                 this.team1Controller.map = true;
                 this.team2Controller.fp = true;
-                this.currentBanUser = team1Controller.user;
+                this.currentBanUser = this.team1Controller.user;
             } else {
                 this.team2Controller.map = true;
                 this.team1Controller.fp = true;
-                this.currentBanUser = team2Controller.user;
+                this.currentBanUser = this.team2Controller.user;
             }
         }
     }
 
     setMode(mode){
+        this.mode = mode;
         switch (mode) {
             case 'Bo1':
             case 'Bo2':

@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import { getEmbed, getEmbedDev } from "../utils/embed.js";
+import { MatchSetup } from '../models/MatchSetup.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -33,31 +34,8 @@ export default {
         const team2Role = interaction.options.getRole('team_2');
         const system = interaction.options.getString('system');
 
-        var winner = null;
-        var bans = 0;
-        var isBo7 = false;
-        var banCount = 0;
-        var currentBanUser = '';
-        var noCurrentBanUser = '';
-        var banPhaseFlag = true;
-        var pickingTeam = null;
-        var team1Bans = {
-            role: team1Role,
-            user: null,
-            mapsBanned: [],
-            fp: false,
-            map: false
-        };
-
-        var team2Bans = {
-            role: team2Role,
-            user: null,
-            mapsBanned: [],
-            fp: false,
-            map: false
-        };
-
-        var totalWinsToFinish = 0;
+        const matchSetup = new MatchSetup(team1Role, team2Role);
+        matchSetup.startBanPhase();
 
         var games = [];
 
@@ -68,33 +46,8 @@ export default {
             fp: null
         }
 
-        switch (system) {
-            case 'Bo1':
-                bans = 4;
-                totalWinsToFinish = 1;
-                break;
-            case 'Bo2':
-                bans = 4;
-                totalWinsToFinish = 1;
-            case 'Bo3':
-                bans = 4;
-                totalWinsToFinish = 2;
-                break;
-            case 'Bo5':
-                bans = 2;
-                totalWinsToFinish = 3;
-                break;
-            case 'Bo7':
-                isBo7 = true;
-                bans = 2;
-                totalWinsToFinish = 4;
-                break;
-            default:
-                console.log(`?`);
-        }
-
-        var team1Member = null;
-        var team2Member = null;
+        matchSetup.setMode(system);
+        var bans = matchSetup.bans;
 
         const joinButton = new ButtonBuilder()
             .setCustomId("join_match")
@@ -109,7 +62,7 @@ export default {
         const buttonsRow = new ActionRowBuilder().addComponents(joinButton, leaveButton);
 
         await interaction.reply({
-            embeds: [embedMention(interaction.user, system), embedRegistration(team1Role, team1Member, team2Role, team2Member, 1, system, bans), getEmbedDev()],
+            embeds: [embedMention(interaction.user, system), newEmbedRegistration(matchSetup, 1), getEmbedDev()],
             components: [buttonsRow],
             fetchReply: true
         });
@@ -125,36 +78,33 @@ export default {
 
             if (i.customId === 'join_match') {
                 if (member.roles.cache.has(team1Role.id)) {
-                    if (team1Member) {
+                    if (matchSetup.team1Controller.user) {
                         errorMessage = 'Team 1 already have a captain.';
                     } else {
-                        team1Member = i.user;
+                        matchSetup.setUserToTeam(1, i.user);
                     }
                 } else if (member.roles.cache.has(team2Role.id)) {
-                    if (team2Member) {
+                    if (matchSetup.team2Controller.user) {
                         errorMessage = 'Team 2 already have a captain.';
                     } else {
-                        team2Member = i.user;
+                        matchSetup.setUserToTeam(2, i.user);
                     }
                 } else {
                     errorMessage = 'You do not have the necessary role to participate!';
                 }
             } else if (i.customId === 'leave_match') {
-                if (team1Member && team1Member.id === i.user.id) {
-                    team1Member = null;
-                } else if (team2Member && team2Member.id === i.user.id) {
-                    team2Member = null;
+                if (matchSetup.team1Controller.user && matchSetup.team1Controller.user.id === i.user.id) {
+                    matchSetup.setUserToTeam(1, null);
+                } else if (matchSetup.team2Controller.user && matchSetup.team2Controller.user.id === i.user.id) {
+                    matchSetup.setUserToTeam(2, null);
                 } else {
                     errorMessage = 'You are not registered in any team.';
                 }
             }
 
-            if (team1Member && team2Member) {
-
-                team1Bans.user = team1Member;
-                team2Bans.user = team2Member;
-
-                const chosenTeam = Math.random() < 0.5 ? team1Member : team2Member;
+            if (matchSetup.team1Controller.user && matchSetup.team2Controller.user) {
+                
+                const chosenTeam = Math.random() < 0.5 ? matchSetup.team1Controller.user : matchSetup.team2Controller.user;
 
                 const fpButton = new ButtonBuilder()
                     .setCustomId("fp")
@@ -173,7 +123,7 @@ export default {
                 completionEmbed.description = `${chosenTeam} won the toss coin! ${chosenTeam}, please select:`;
 
                 await i.update({
-                    embeds: [embedMention(interaction.user, system), embedRegistration(team1Role, team1Member, team2Role, team2Member, 2, system, bans), completionEmbed, getEmbedDev()],
+                    embeds: [embedMention(interaction.user, matchSetup.mode), newEmbedRegistration(matchSetup, 2), completionEmbed, getEmbedDev()],
                     components: [buttonsRowFPMap]
                 });
 
@@ -193,27 +143,9 @@ export default {
                     const member = await interaction.guild.members.fetch(i.user.id);
                     const fpmap = i.customId;
 
-                    if (fpmap === 'fp') {
-                        if (chosenTeam === team1Member) {
-                            team1Bans.fp = true;
-                            team2Bans.map = true;
-                            currentBanUser = team2Bans.user;
-                        } else {
-                            team2Bans.fp = true;
-                            team1Bans.map = true;
-                            currentBanUser = team1Bans.user;
-                        }
-                    } else if (fpmap === 'map') {
-                        if (chosenTeam === team1Member) {
-                            team1Bans.map = true;
-                            team2Bans.fp = true;
-                            currentBanUser = team1Bans.user;
-                        } else {
-                            team2Bans.map = true;
-                            team1Bans.fp = true;
-                            currentBanUser = team2Bans.user;
-                        }
-                    }
+                    matchSetup.setFirstPickAndMap(fpmap, chosenTeam);
+
+                    newEmbedRegistration(matchSetup, 2);
 
                     const maps = [
                         "Alterac", "Battlefield", "Braxis", "Cursed", "Dragon",
@@ -224,7 +156,7 @@ export default {
                     var actionRows = generateActionRowsForMaps(maps, ButtonStyle.Danger);
 
                     await i.update({
-                        embeds: [embedRegistration(team1Role, team1Member, team2Role, team2Member, 2, system, bans, team1Bans, team2Bans), createBansEmbed(currentBanUser), getEmbedDev()],
+                        embeds: [newEmbedRegistration(matchSetup, 2), createBansEmbed(matchSetup.currentBanUser), getEmbedDev()],
                         components: actionRows
                     });
 
@@ -234,9 +166,9 @@ export default {
 
                     collectorBans.on('collect', async (interaction) => {
 
-                        if (banPhaseFlag) {
+                        if (matchSetup.banPhaseFlag) {
 
-                            if (interaction.user.id !== currentBanUser.id) {
+                            if (interaction.user.id !== matchSetup.currentBanUser.id) {
                                 await interaction.reply({
                                     content: "You are not authorized to do this action at this time!",
                                     ephemeral: true
@@ -259,45 +191,62 @@ export default {
                                 return new ActionRowBuilder().addComponents(updatedComponents);
                             });
 
-                            banCount = banCount + 1;
-                            currentBanUser = (currentBanUser === team1Member) ? team2Member : team1Member;
-                            noCurrentBanUser = (currentBanUser === team1Member) ? team2Member : team1Member;
+                            matchSetup.banCount += 1;
+                            matchSetup.currentBanUser = (matchSetup.currentBanUser === matchSetup.team1Controller.user) ? matchSetup.team2Controller.user : matchSetup.team1Controller.user;
+                            matchSetup.noCurrentBanUser = (matchSetup.currentBanUser === matchSetup.team1Controller.user) ? matchSetup.team2Controller.user : matchSetup.team1Controller.user;
 
-                            const member = await interaction.guild.members.fetch(currentBanUser.id);
-                            if (member.roles.cache.has(team2Bans.role.id)) {
-                                team1Bans.mapsBanned.push(mapName);
-                            } else if (member.roles.cache.has(team1Bans.role.id)) {
-                                team2Bans.mapsBanned.push(mapName);
+                            const member = await interaction.guild.members.fetch(matchSetup.currentBanUser.id);
+                            if (member.roles.cache.has(matchSetup.team2Controller.role.id)) {
+                                matchSetup.team1Controller.mapsBanned.push(mapName);
+                            } else if (member.roles.cache.has(matchSetup.team1Controller.role.id)) {
+                                matchSetup.team2Controller.mapsBanned.push(mapName);
                             }
 
-                            if (banCount >= bans) {
-                                banPhaseFlag = false;
-                                var availableMaps = updateAvailableMaps(maps, team1Bans, team2Bans);
+                            if (matchSetup.banCount >= bans) {
+                                var availableMaps = updateAvailableMaps(maps, matchSetup.team1Controller, matchSetup.team2Controller);
                                 var pickMapsRows = generateActionRowsForMaps(availableMaps, ButtonStyle.Success);
-                                pickingTeam = team2Bans.map ? team2Member : team1Member;
+                                matchSetup.pickingTeam = matchSetup.team2Controller.map ? matchSetup.team2Controller.user : matchSetup.team1Controller.user;
+
+                                matchSetup.startPickPhase();
+
                                 await interaction.update({
-                                    embeds: [embedRegistration(team1Role, team1Member, team2Role, team2Member, 2, system, bans, team1Bans, team2Bans), createPicksEmbed(pickingTeam), getEmbedDev()],
+                                    embeds: [newEmbedRegistration(matchSetup, 2), createPicksEmbed(matchSetup.pickingTeam), getEmbedDev()],
                                     components: pickMapsRows
                                 });
                             } else {
                                 await interaction.update({
-                                    embeds: [createMapBanned(noCurrentBanUser, mapName), embedRegistration(team1Role, team1Member, team2Role, team2Member, 2, system, bans, team1Bans, team2Bans), createBansEmbed(currentBanUser), getEmbedDev()],
+                                    embeds: [createMapBanned(matchSetup.noCurrentBanUser, mapName), newEmbedRegistration(matchSetup, 2), createBansEmbed(matchSetup.currentBanUser), getEmbedDev()],
                                     components: actionRows
                                 });
                             }
                         } else {
-                            var availableMaps = updateAvailableMaps(maps, team1Bans, team2Bans);
-                            var pickMapsRows = generateActionRowsForMaps(availableMaps, ButtonStyle.Success);
-                            pickingTeam = team2Bans.map ? team2Member : team1Member;
+                            if (matchSetup.totalWinsToFinish > games.length) {
+                                if (interaction.user.id !== matchSetup.pickingTeam.id) {
+                                    await interaction.reply({
+                                        content: "You are not authorized to do this action at this time!",
+                                        ephemeral: true
+                                    });
+                                    return;
+                                }
 
-                            await interaction.update({
-                                embeds: [embedRegistration(team1Role, team1Member, team2Role, team2Member, 2, system, bans, team1Bans, team2Bans), createPicksEmbed(pickingTeam), getEmbedDev()],
-                                components: pickMapsRows
-                            });
+                                let mapName = interaction.customId.replace(/_/g, ' ');
+                                mapName = mapName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                                
+                                console.log(mapName);
 
+                                //var availableMaps = updateAvailableMaps(maps, matchSetup.team1Controller, matchSetup.team2Controller);
+                                //var pickMapsRows = generateActionRowsForMaps(availableMaps, ButtonStyle.Success);
+                                matchSetup.pickingTeam = matchSetup.team2Controller.map ? matchSetup.team2Controller.user : matchSetup.team1Controller.user;
+    
+                                await interaction.update({
+                                    embeds: [newEmbedRegistration(matchSetup, 2), createGamesEmbed(games), getEmbedDev()],
+                                    components: pickMapsRows
+                                });
+                            } else {
+                                console.log("games finished!");                                
+                            }
                         }
                     });
-
                 });
 
             } else {
@@ -305,7 +254,7 @@ export default {
                     await i.reply({ content: errorMessage, ephemeral: true });
                 } else {
                     await i.update({
-                        embeds: [embedMention(interaction.user, system), embedRegistration(team1Role, team1Member, team2Role, team2Member, 1, system, bans), getEmbedDev()],
+                        embeds: [embedMention(interaction.user, system), newEmbedRegistration(matchSetup, 1), getEmbedDev()],
                         components: [buttonsRow]
                     });
                 }
@@ -320,62 +269,6 @@ const embedMention = (user, system) => {
     const userMention = `<@${user.id}>`;
     embed.description = `${userMention} have selected: **${system}**`;
     embed.footer = null;
-    return embed;
-}
-
-const embedRegistration = (team1Role, team1Member, team2Role, team2Member, description, system, bans, team1Bans, team2Bans) => {
-    const embed = getEmbed();
-    embed.title = `Match: **${team1Role.name}** vs **${team2Role.name}**`;
-    if (description == 1) {
-        embed.description = `Captains, click \`join\` to represent your team.`;
-    } else {
-        embed.description = `Teams Ready:`;
-    }
-
-    const team1Status = team1Member ? `<@&${team1Role.id}> (captain: <@${team1Member.id}>)` : `<@&${team1Role.id}> (Waiting for member)`;
-    const team2Status = team2Member ? `<@&${team2Role.id}> (captain: <@${team2Member.id}>)` : `<@&${team2Role.id}> (Waiting for member)`;
-
-    embed.fields.push(
-        { name: `\`${system}\` - bans: \`${bans}\``, value: ``, inline: false },
-        { name: 'Team 1', value: team1Status, inline: true },
-        { name: 'Team 2', value: team2Status, inline: true },
-    );
-
-
-    if (team1Bans || team2Bans) {
-        embed.fields.push(
-            { name: `\u200b`, value: ``, inline: false }
-        );
-        if (team1Bans.fp) {
-            embed.fields.push(
-                { name: `Toss coin:`, value: `First Pick: \`${team1Bans.role.name} (${team1Bans.user.globalName})\``, inline: false },
-                { name: ``, value: `Map: \`${team2Bans.role.name} (${team2Bans.user.globalName})\``, inline: false }
-            );
-        }
-        if (team2Bans.fp) {
-            embed.fields.push(
-                { name: `Toss coin:`, value: `First Pick: \`${team2Bans.role.name} (${team2Bans.user.globalName})\``, inline: false },
-                { name: ``, value: `Map: \`${team1Bans.role.name} (${team1Bans.user.globalName})\``, inline: false }
-            );
-        }
-        embed.fields.push({ name: `\u200b`, value: ``, inline: false })
-    }
-
-    if (team1Bans && team1Bans.mapsBanned.length > 0) {
-        const mapsBannedString = team1Bans.mapsBanned.join(', ');
-        embed.fields.push(
-            { name: `${team1Bans.role.name} bans:`, value: `\`${mapsBannedString}\`` }
-        );
-    }
-
-    if (team2Bans && team2Bans.mapsBanned.length > 0) {
-        const mapsBannedString = team2Bans.mapsBanned.join(', ');
-        embed.fields.push(
-            { name: `${team2Bans.role.name} bans:`, value: `\`${mapsBannedString}\`` }
-        );
-        
-    }
-
     return embed;
 }
 
@@ -403,7 +296,7 @@ function createMapBanned(currentBanUser, banned) {
 function createPicksEmbed(currentPickUser) {
     const pickEmbed = getEmbed();
     pickEmbed.title = "Map pick:";
-    pickEmbed.description = `${currentPickUser}, please select a map to pick:`;
+    pickEmbed.description = `${currentPickUser}, please select a map to play:`;
     return pickEmbed;
 }
 
@@ -428,10 +321,63 @@ function generateActionRowsForMaps(maps, style) {
     return actionRows;
 }
 
-function updateAvailableMaps(maps, team1Bans, team2Bans) {
-    const bannedMaps = [...team1Bans.mapsBanned, ...team2Bans.mapsBanned];
+function updateAvailableMaps(maps, team1Controller, team2Controller) {
+    const bannedMaps = [...team1Controller.mapsBanned, ...team2Controller.mapsBanned];
 
     let availableMaps = maps.filter(map => !bannedMaps.includes(map));
 
     return availableMaps;
 };
+
+const newEmbedRegistration = (matchSetup, description) => {
+    const embed = getEmbed();
+    embed.title = `Match: **${matchSetup.team1Controller.role.name}** vs **${matchSetup.team2Controller.role.name}**`;
+    if (description == 1) {
+        embed.description = `Captains, click \`join\` to represent your team.`;
+    } else {
+        embed.description = `Teams Ready:`;
+    }
+
+    const team1Status = matchSetup.team1Controller.user ? `<@&${matchSetup.team1Controller.role.id}> (captain: <@${matchSetup.team1Controller.user.id}>)` : `<@&${matchSetup.team1Controller.role.id}> (Waiting for member)`;
+    const team2Status = matchSetup.team2Controller.user ? `<@&${matchSetup.team2Controller.role.id}> (captain: <@${matchSetup.team2Controller.user.id}>)` : `<@&${matchSetup.team2Controller.role.id}> (Waiting for member)`;
+
+    embed.fields.push(
+        { name: `\`${matchSetup.mode}\` - bans: \`${matchSetup.bans}\``, value: ``, inline: false },
+        { name: 'Team 1', value: team1Status, inline: true },
+        { name: 'Team 2', value: team2Status, inline: true },
+    );
+
+    if (matchSetup.team1Controller.fp || matchSetup.team2Controller.fp) {
+        let firstPickTeam = matchSetup.getTeamFp();
+        let mapPickTeam = matchSetup.getTeamMap();
+        embed.fields.push(
+            { name: `\u200b`, value: ``, inline: false },
+            { name: `Toss coin:`, value: `First Pick: \`${firstPickTeam.role.name} (${firstPickTeam.user.globalName})\``, inline: false },
+            { name: ``, value: `Map: \`${mapPickTeam.role.name} (${mapPickTeam.user.globalName})\``, inline: false },
+            { name: `\u200b`, value: ``, inline: false }
+        );
+    }
+
+    if (matchSetup.team1Controller.mapsBanned.length > 0) {
+        const mapsBannedString = matchSetup.team1Controller.mapsBanned.join(', ');
+        embed.fields.push(
+            { name: `${matchSetup.team1Controller.role.name} bans:`, value: `\`${mapsBannedString}\`` }
+        );
+    }
+
+    if (matchSetup.team2Controller.mapsBanned.length > 0) {
+        const mapsBannedString = matchSetup.team2Controller.mapsBanned.join(', ');
+        embed.fields.push(
+            { name: `${matchSetup.team2Controller.role.name} bans:`, value: `\`${mapsBannedString}\`` }
+        );
+        
+    }
+    return embed;
+}
+
+function createGamesEmbed(games) {
+    const gamesEmbed = getEmbed();
+    gamesEmbed.title = ``;
+    gamesEmbed.description = ``;
+    return gamesEmbed;
+}

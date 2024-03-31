@@ -9,6 +9,7 @@ export class MatchSetup {
         this.noCurrentBanUser = '';
         this.banPhaseFlag = true;
         this.pickingTeam = null;
+        this.fpTeam = null;
         this.mode;
         this.totalWinsToFinish = 0;
         this.team1Controller = {

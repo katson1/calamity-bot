@@ -1,6 +1,7 @@
 import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import { getEmbed, getEmbedDev } from "../utils/embed.js";
 import { MatchSetup } from '../models/MatchSetup.js';
+import { Game } from '../models/Game.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -37,12 +38,7 @@ export default {
         const matchSetup = new MatchSetup(team1Role, team2Role);
         matchSetup.startBanPhase();
 
-        var game = {
-            mapPlayed: '',
-            mapChooser: null,
-            winner: null,
-            fp: null
-        }
+        var game = new Game();
 
         matchSetup.setMode(system);
         var bans = matchSetup.bans;
@@ -202,6 +198,7 @@ export default {
                                 var availableMaps = updateAvailableMaps(maps, matchSetup.team1Controller, matchSetup.team2Controller);
                                 var pickMapsRows = generateActionRowsForMaps(availableMaps, ButtonStyle.Success);
                                 matchSetup.pickingTeam = matchSetup.team2Controller.tosscoin_map ? matchSetup.team2Controller.user : matchSetup.team1Controller.user;
+                                matchSetup.fpTeam = matchSetup.team2Controller.tosscoin_map ? matchSetup.team1Controller.user : matchSetup.team2Controller.user;
 
                                 matchSetup.startPickPhase();
 
@@ -227,13 +224,17 @@ export default {
                                 let mapName = interaction.customId.replace(/_/g, ' ');
                                 mapName = mapName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
                                 
-                                game.mapPlayed = mapName,
-                                game.mapChooser = matchSetup.pickingTeam;
+                                if (game.isFinished) {
+                                   game.startNewGame();
+                                }
+                                game.setFpAndMapChooser(matchSetup.fpTeam, matchSetup.pickingTeam);
+                                game.mapPlayed = mapName;
                                 matchSetup.games.push(game);
 
                                 //var availableMaps = updateAvailableMaps(maps, matchSetup.team1Controller, matchSetup.team2Controller);
                                 //var pickMapsRows = generateActionRowsForMaps(availableMaps, ButtonStyle.Success);
                                 matchSetup.pickingTeam = null;
+                                matchSetup.fpTeam = null;
     
                                 await interaction.update({
                                     embeds: [newEmbedRegistration(matchSetup, 2), createGamesEmbed(matchSetup), getEmbedDev()],
@@ -390,10 +391,25 @@ const newEmbedRegistration = (matchSetup, description) => {
 function createGamesEmbed(matchSetup) {
     const gamesEmbed = getEmbed();
     gamesEmbed.title = `Games:`;
-    gamesEmbed.description = `${matchSetup.mode}: ${matchSetup.team1Controller.wins} - ${matchSetup.team2Controller.wins}`;
+    gamesEmbed.description = `${matchSetup.mode}: \`${matchSetup.team1Controller.wins} - ${matchSetup.team2Controller.wins}\``;
 
     matchSetup.games.forEach((game, index) => {
-        console.log(game);
+        gamesEmbed.fields.push(
+            { name: `Game\` ${index+1}\`:`, value: ``, inline: false  }
+            { name: `\u200b`, value: ``, inline: false  }
+        );
+        if(!game.isFinished){
+            gamesEmbed.fields.push(
+                { name: ``, value: `**Map:** ${game.mapPlayed}`, inline: false  },
+                { name: ``, value: `**First Pick:** ${game.fp.globalName}`, inline: false  }
+            );
+        } else {
+            gamesEmbed.fields.push(
+                { name: ``, value: `**Map:** \`${game.mapPlayed}\``, inline: false  },
+                { name: ``, value: `**First Pick:** \`${game.fp.globalName}\``, inline: false  },
+                { name: ``, value: `**Winner:** ${game.winner}`, inline: false  },
+            );
+        }
     });
 
     return gamesEmbed;

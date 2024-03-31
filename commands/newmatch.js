@@ -198,7 +198,7 @@ export default {
                                 var availableMaps = updateAvailableMaps(maps, matchSetup.team1Controller, matchSetup.team2Controller);
                                 var pickMapsRows = generateActionRowsForMaps(availableMaps, ButtonStyle.Success);
                                 matchSetup.pickingTeam = matchSetup.team2Controller.tosscoin_map ? matchSetup.team2Controller.user : matchSetup.team1Controller.user;
-                                matchSetup.fpTeam = matchSetup.team2Controller.tosscoin_map ? matchSetup.team1Controller.user : matchSetup.team2Controller.user;
+                                matchSetup.fpTeam = matchSetup.team2Controller.tosscoin_map ? matchSetup.team1Controller.role : matchSetup.team2Controller.role;
 
                                 matchSetup.startPickPhase();
 
@@ -401,12 +401,12 @@ function createGamesEmbed(matchSetup) {
         if(!game.isFinished){
             gamesEmbed.fields.push(
                 { name: ``, value: `**Map:** ${game.mapPlayed}`, inline: false  },
-                { name: ``, value: `**First Pick:** ${game.fp.globalName}`, inline: false  }
+                { name: ``, value: `**First Pick:** ${game.fp.name}`, inline: false  }
             );
         } else {
             gamesEmbed.fields.push(
                 { name: ``, value: `**Map:** \`${game.mapPlayed}\``, inline: false  },
-                { name: ``, value: `**First Pick:** \`${game.fp.globalName}\``, inline: false  },
+                { name: ``, value: `**First Pick:** \`${game.fp.name}\``, inline: false  },
                 { name: ``, value: `**Winner:** ${game.winner}`, inline: false  },
             );
         }

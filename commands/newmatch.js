@@ -37,8 +37,6 @@ export default {
         const matchSetup = new MatchSetup(team1Role, team2Role);
         matchSetup.startBanPhase();
 
-        var games = [];
-
         var game = {
             mapPlayed: '',
             mapChooser: null,
@@ -175,10 +173,8 @@ export default {
                                 });
                                 return;
                             }
-
                             let mapName = interaction.customId.replace(/_/g, ' ');
                             mapName = mapName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-
                             actionRows = actionRows.map(row => {
                                 const updatedComponents = row.components.map(button => {
                                     if (button.data.custom_id === interaction.customId) {
@@ -205,7 +201,7 @@ export default {
                             if (matchSetup.banCount >= bans) {
                                 var availableMaps = updateAvailableMaps(maps, matchSetup.team1Controller, matchSetup.team2Controller);
                                 var pickMapsRows = generateActionRowsForMaps(availableMaps, ButtonStyle.Success);
-                                matchSetup.pickingTeam = matchSetup.team2Controller.map ? matchSetup.team2Controller.user : matchSetup.team1Controller.user;
+                                matchSetup.pickingTeam = matchSetup.team2Controller.tosscoin_map ? matchSetup.team2Controller.user : matchSetup.team1Controller.user;
 
                                 matchSetup.startPickPhase();
 
@@ -220,7 +216,7 @@ export default {
                                 });
                             }
                         } else {
-                            if (matchSetup.totalWinsToFinish > games.length) {
+                            if (matchSetup.totalWinsToFinish > matchSetup.games.length) {
                                 if (interaction.user.id !== matchSetup.pickingTeam.id) {
                                     await interaction.reply({
                                         content: "You are not authorized to do this action at this time!",
@@ -228,19 +224,20 @@ export default {
                                     });
                                     return;
                                 }
-
                                 let mapName = interaction.customId.replace(/_/g, ' ');
                                 mapName = mapName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
                                 
-                                console.log(mapName);
+                                game.mapPlayed = mapName,
+                                game.mapChooser = matchSetup.pickingTeam;
+                                matchSetup.games.push(game);
 
                                 //var availableMaps = updateAvailableMaps(maps, matchSetup.team1Controller, matchSetup.team2Controller);
                                 //var pickMapsRows = generateActionRowsForMaps(availableMaps, ButtonStyle.Success);
-                                matchSetup.pickingTeam = matchSetup.team2Controller.map ? matchSetup.team2Controller.user : matchSetup.team1Controller.user;
+                                matchSetup.pickingTeam = null;
     
                                 await interaction.update({
-                                    embeds: [newEmbedRegistration(matchSetup, 2), createGamesEmbed(games), getEmbedDev()],
-                                    components: pickMapsRows
+                                    embeds: [newEmbedRegistration(matchSetup, 2), createGamesEmbed(matchSetup), getEmbedDev()],
+                                    components: [getWinnersButtonRows(matchSetup)]
                                 });
                             } else {
                                 console.log("games finished!");                                
@@ -277,6 +274,20 @@ function createMapButton(mapName, style) {
         .setCustomId(mapName.toLowerCase())
         .setLabel(mapName)
         .setStyle(style);
+}
+
+function createWinnersButton(teamController) {
+    return new ButtonBuilder()
+        .setCustomId(teamController.role.name)
+        .setLabel(teamController.role.name)
+        .setStyle(ButtonStyle.Success);
+}
+
+function getWinnersButtonRows(matchSetup){
+    let winnersRow = new ActionRowBuilder();
+    winnersRow.addComponents(createWinnersButton(matchSetup.team1Controller));
+    winnersRow.addComponents(createWinnersButton(matchSetup.team2Controller));
+    return winnersRow;
 }
 
 function createBansEmbed(currentBanUser) {
@@ -335,7 +346,7 @@ const newEmbedRegistration = (matchSetup, description) => {
     if (description == 1) {
         embed.description = `Captains, click \`join\` to represent your team.`;
     } else {
-        embed.description = `Teams Ready:`;
+        embed.description = `Teams ready!`;
     }
 
     const team1Status = matchSetup.team1Controller.user ? `<@&${matchSetup.team1Controller.role.id}> (captain: <@${matchSetup.team1Controller.user.id}>)` : `<@&${matchSetup.team1Controller.role.id}> (Waiting for member)`;
@@ -347,7 +358,7 @@ const newEmbedRegistration = (matchSetup, description) => {
         { name: 'Team 2', value: team2Status, inline: true },
     );
 
-    if (matchSetup.team1Controller.fp || matchSetup.team2Controller.fp) {
+    if (matchSetup.team1Controller.tosscoin_fp || matchSetup.team2Controller.tosscoin_fp) {
         let firstPickTeam = matchSetup.getTeamFp();
         let mapPickTeam = matchSetup.getTeamMap();
         embed.fields.push(
@@ -361,23 +372,29 @@ const newEmbedRegistration = (matchSetup, description) => {
     if (matchSetup.team1Controller.mapsBanned.length > 0) {
         const mapsBannedString = matchSetup.team1Controller.mapsBanned.join(', ');
         embed.fields.push(
-            { name: `${matchSetup.team1Controller.role.name} bans:`, value: `\`${mapsBannedString}\`` }
+            { name: `${matchSetup.team1Controller.role.name} bans:`, value: `\`${mapsBannedString}\``, inline: true  }
         );
     }
 
     if (matchSetup.team2Controller.mapsBanned.length > 0) {
         const mapsBannedString = matchSetup.team2Controller.mapsBanned.join(', ');
         embed.fields.push(
-            { name: `${matchSetup.team2Controller.role.name} bans:`, value: `\`${mapsBannedString}\`` }
+            { name: `${matchSetup.team2Controller.role.name} bans:`, value: `\`${mapsBannedString}\``, inline: true  }
         );
         
     }
+
     return embed;
 }
 
-function createGamesEmbed(games) {
+function createGamesEmbed(matchSetup) {
     const gamesEmbed = getEmbed();
-    gamesEmbed.title = ``;
-    gamesEmbed.description = ``;
+    gamesEmbed.title = `Games:`;
+    gamesEmbed.description = `${matchSetup.mode}: ${matchSetup.team1Controller.wins} - ${matchSetup.team2Controller.wins}`;
+
+    matchSetup.games.forEach((game, index) => {
+        console.log(game);
+    });
+
     return gamesEmbed;
 }

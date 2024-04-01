@@ -30,6 +30,17 @@ export class MatchSetup {
         };
     }
 
+    getCheckIfSerieIsComplete(){
+        console.log('checking');
+        if (this.team1Controller.wins == this.totalWinsToFinish) {
+            return team1Controller;
+        }
+        if (this.team2Controller.wins == this.totalWinsToFinish) {
+            return team1Controller;
+        }
+        return false;
+    }
+
 
     startBanPhase() {
         this.banPhaseFlag = true;

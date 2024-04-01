@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import { getEmbed, getEmbedDev } from "../utils/embed.js";
+import { getEmbed, getEmbedDev, getEmbedGamesFinished } from "../utils/embed.js";
 import { MatchSetup } from '../models/MatchSetup.js';
 import { Game } from '../models/Game.js';
 
@@ -37,9 +37,7 @@ export default {
 
         const matchSetup = new MatchSetup(team1Role, team2Role);
         matchSetup.startBanPhase();
-
         var game = new Game();
-
         matchSetup.setMode(system);
         var bans = matchSetup.bans;
 
@@ -98,7 +96,7 @@ export default {
 
             if (matchSetup.team1Controller.user && matchSetup.team2Controller.user) {
                 
-                const chosenTeam = Math.random() < 0.5 ? matchSetup.team1Controller.user : matchSetup.team2Controller.user;
+                const chosenTeam = Math.random() < 0.5 ? matchSetup.team1Controller : matchSetup.team2Controller;
 
                 const fpButton = new ButtonBuilder()
                     .setCustomId("fp")
@@ -114,7 +112,7 @@ export default {
 
                 const completionEmbed = getEmbed();
                 completionEmbed.title = "Toss coin:";
-                completionEmbed.description = `${chosenTeam} won the toss coin! ${chosenTeam}, please select:`;
+                completionEmbed.description = `${chosenTeam.role} won the toss coin! ${chosenTeam.user}, please select:`;
 
                 await i.update({
                     embeds: [embedMention(interaction.user, matchSetup.mode), newEmbedRegistration(matchSetup, 2), completionEmbed, getEmbedDev()],
@@ -126,7 +124,7 @@ export default {
 
                 collector.on('collect', async (i) => {
 
-                    if (i.user.id !== chosenTeam.id) {
+                    if (i.user.id !== chosenTeam.user.id) {
                         await i.reply({
                             content: "You are not authorized to do this action at this time!",
                             ephemeral: true
@@ -137,7 +135,7 @@ export default {
                     const member = await interaction.guild.members.fetch(i.user.id);
                     const fpmap = i.customId;
 
-                    matchSetup.setFirstPickAndMap(fpmap, chosenTeam);
+                    matchSetup.setFirstPickAndMap(fpmap, chosenTeam.user);
 
                     newEmbedRegistration(matchSetup, 2);
 
@@ -154,7 +152,7 @@ export default {
                         components: actionRows
                     });
 
-                    const filter = (i) => i.isButton() && i.customId.match(/^[a-z]+(_[a-z]+)*$/);
+                    const filter = (i) => i.isButton();
 
                     const collectorBans = interaction.channel.createMessageComponentCollector({ filter, time: 24000000 });
 
@@ -213,7 +211,54 @@ export default {
                                 });
                             }
                         } else {
-                            if (matchSetup.totalWinsToFinish > matchSetup.games.length) {
+
+                            var components = getWinnersButtonRows(matchSetup);
+
+                            if (game.progress == 3) {
+                                console.log("aq");
+                                let fpOrMap = interaction.customId;
+                                console.log(fpOrMap);
+                                if (fpOrMap === 'fpgames') {
+                                    console.log('fp');
+                                } else if (fpOrMap === 'fpgames') {
+                                    console.log('map');
+                                }
+
+                                await interaction.update({
+                                    embeds: [newEmbedRegistration(matchSetup, 2), createGamesEmbed(matchSetup), getEmbedDev()],
+                                    components: []
+                                });
+                            }
+
+                            if (game.progress == 2) {
+                                let winner = interaction.customId;
+                                winner = winner.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+
+                                if (matchSetup.team1Controller.role.name === winner) {
+                                    winner = matchSetup.team1Controller.role;
+                                    matchSetup.pickingTeam = matchSetup.team2Controller.user;
+                                    matchSetup.team1Controller.wins = matchSetup.team1Controller.wins + 1;
+                                } else if (matchSetup.team2Controller.role.name === winner) {
+                                    winner = matchSetup.team2Controller.role;
+                                    matchSetup.pickingTeam = matchSetup.team1Controller.user;
+                                    matchSetup.team2Controller.wins = matchSetup.team2Controller.wins + 1;
+                                }
+                                game.setWinner(winner);
+
+                                if (matchSetup.team1Controller.wins == matchSetup.totalWinsToFinish || matchSetup.team2Controller.wins == matchSetup.totalWinsToFinish) {
+                                    await interaction.update({
+                                        embeds: [newEmbedRegistration(matchSetup, 2), createGamesEmbed(matchSetup), getEmbedGamesFinished(), getEmbedDev()],
+                                        components: []
+                                    });
+                                } else {
+                                    await interaction.update({
+                                        embeds: [newEmbedRegistration(matchSetup, 2), createGamesEmbed(matchSetup), getEmbedDev()],
+                                        components: [getFpMapButton()]
+                                    });
+                                }
+                            }
+
+                            if(game.progress == 1) {
                                 if (interaction.user.id !== matchSetup.pickingTeam.id) {
                                     await interaction.reply({
                                         content: "You are not authorized to do this action at this time!",
@@ -221,27 +266,23 @@ export default {
                                     });
                                     return;
                                 }
+
                                 let mapName = interaction.customId.replace(/_/g, ' ');
                                 mapName = mapName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
                                 
-                                if (game.isFinished) {
-                                   game.startNewGame();
-                                }
                                 game.setFpAndMapChooser(matchSetup.fpTeam, matchSetup.pickingTeam);
                                 game.mapPlayed = mapName;
                                 matchSetup.games.push(game);
 
-                                //var availableMaps = updateAvailableMaps(maps, matchSetup.team1Controller, matchSetup.team2Controller);
-                                //var pickMapsRows = generateActionRowsForMaps(availableMaps, ButtonStyle.Success);
                                 matchSetup.pickingTeam = null;
                                 matchSetup.fpTeam = null;
-    
+
+                                game.progress = 2;
+
                                 await interaction.update({
                                     embeds: [newEmbedRegistration(matchSetup, 2), createGamesEmbed(matchSetup), getEmbedDev()],
                                     components: [getWinnersButtonRows(matchSetup)]
                                 });
-                            } else {
-                                console.log("games finished!");                                
                             }
                         }
                     });
@@ -277,17 +318,37 @@ function createMapButton(mapName, style) {
         .setStyle(style);
 }
 
-function createWinnersButton(teamController) {
+function createWinnersButton(buttonName) {
     return new ButtonBuilder()
-        .setCustomId(teamController.role.name)
-        .setLabel(teamController.role.name)
+        .setCustomId(buttonName)
+        .setLabel(buttonName)
         .setStyle(ButtonStyle.Success);
 }
 
-function getWinnersButtonRows(matchSetup){
+function getFpMapButton(){
+    let fpMapRow = new ActionRowBuilder();
+    fpMapRow.addComponents(createFpMapButton('Map', 'mapgames'));
+    fpMapRow.addComponents(createFpMapButton('First Pick', 'fpgames'));
+    return fpMapRow;
+}
+
+function createFpMapButton(buttonName, id) {
+    if(id == 'fpgames'){
+        return new ButtonBuilder()
+        .setCustomId(id)
+        .setLabel(buttonName)
+        .setStyle(ButtonStyle.Primary);
+    }
+    return new ButtonBuilder()
+        .setCustomId(id)
+        .setLabel(buttonName)
+        .setStyle(ButtonStyle.Success);
+}
+
+function getWinnersButtonRows(matchSetup) {
     let winnersRow = new ActionRowBuilder();
-    winnersRow.addComponents(createWinnersButton(matchSetup.team1Controller));
-    winnersRow.addComponents(createWinnersButton(matchSetup.team2Controller));
+    winnersRow.addComponents(createWinnersButton(matchSetup.team1Controller.role.name));
+    winnersRow.addComponents(createWinnersButton(matchSetup.team2Controller.role.name));
     return winnersRow;
 }
 
@@ -395,10 +456,10 @@ function createGamesEmbed(matchSetup) {
 
     matchSetup.games.forEach((game, index) => {
         gamesEmbed.fields.push(
+            { name: `\u200b`, value: ``, inline: false  },
             { name: `Game\` ${index+1}\`:`, value: ``, inline: false  }
-            { name: `\u200b`, value: ``, inline: false  }
         );
-        if(!game.isFinished){
+        if(game.progress == 1 || game.progress == 2){
             gamesEmbed.fields.push(
                 { name: ``, value: `**Map:** ${game.mapPlayed}`, inline: false  },
                 { name: ``, value: `**First Pick:** ${game.fp.name}`, inline: false  }

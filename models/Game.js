@@ -4,12 +4,13 @@ export class Game {
         this.mapChooser = null;
         this.winner = null;
         this.fp = null;
-        this.isFinished = false;
+        this.progress = 1;
     }
 
     setWinner(winner) {
         this.winner = winner;
         this.isFinished = true;
+        this.progress = 3;
     }
 
     setFpAndMapChooser(fp, mapChooser){
@@ -22,7 +23,7 @@ export class Game {
         this.mapChooser = null;
         this.winner = null;
         this.fp = null;
-        this.isFinished = false;
+        this.progress = 1;
     }
 
 }

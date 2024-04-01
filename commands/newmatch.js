@@ -239,8 +239,15 @@ export default {
                             }
 
                             if (game.progress == 2) {
+                                const member = interaction.guild.members.cache.get(interaction.user.id);
+                                if (!member.roles.cache.some(role => role.name.toLowerCase() === 'adm')) {
+                                    await interaction.reply({
+                                        content: "Only an admin can set a winner!",
+                                        ephemeral: true
+                                    });
+                                    return;
+                                }
                                 let winner = interaction.customId;
-                                winner = winner.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
                                 if (matchSetup.team1Controller.role.name === winner) {
                                     winner = matchSetup.team1Controller.role;
@@ -289,7 +296,7 @@ export default {
                                 game.progress = 2;
 
                                 await interaction.update({
-                                    embeds: [newEmbedRegistration(matchSetup, 2), createGamesEmbed(matchSetup), getEmbedDev()],
+                                    embeds: [newEmbedRegistration(matchSetup, 2), createGamesEmbed(matchSetup), createStaffEmbed(), getEmbedDev()],
                                     components: [getWinnersButtonRows(matchSetup)]
                                 });
                             }
@@ -362,6 +369,14 @@ function getWinnersButtonRows(matchSetup) {
     winnersRow.addComponents(createWinnersButton(matchSetup.team1Controller.role.name));
     winnersRow.addComponents(createWinnersButton(matchSetup.team2Controller.role.name));
     return winnersRow;
+}
+
+
+function createStaffEmbed() {
+    const staffEmbed = getEmbed();
+    staffEmbed.title = '';
+    staffEmbed.description = `Administrators, please select the winner:`;
+    return staffEmbed;
 }
 
 function createBansEmbed(currentBanUser) {
@@ -506,3 +521,4 @@ function createGamesEmbed(matchSetup) {
 
     return gamesEmbed;
 }
+

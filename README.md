@@ -7,7 +7,7 @@ A bot who draft maps and bans for a Heroes Of The Storm [tournament](https://www
 <details>
   <summary> /newmatch </summary>
   
-  - Create a new match registration (bans and fp and map selection)
+  - Create a new match registration (bans, fist picks and map selection).
   
     * options:
 
@@ -27,34 +27,7 @@ A bot who draft maps and bans for a Heroes Of The Storm [tournament](https://www
 
 
 ## 📦 How to use:
-You need to have [node.js](https://nodejs.org/en) and [mongodb](https://www.mongodb.com/pt-br) installed.
-
-Run this command in another terminal to start mongod:
-  ```
-mongod
-  ```
-
-<blockquote> 
-<details>
-  <summary> Click here if you're having problems with the command "mongod" (on Windows)</summary>
-  <blockquote> 
-   
-    Reinstall MongoDB as usual and wait until Compass appears. If it doesn't, uninstall and reinstall. 
-    Copy the installation path; we'll need it.
-    Open a command prompt (cmd.exe) as an administrator.
-    Type: cd C:\
-    Then: md "\data\db"
-    After that: "C:\Program Files\MongoDB\Server\4.2\bin\mongod.exe" --dbpath="c:\data\db"
-    Press "CTRL+C" and close cmd.exe.
-    Copy the installation path up to the "bin" folder, for example: C:\Program Files\MongoDB\Server\YOUR_MONGODB_VERSION\bin
-    Go to system properties and add to the system environment variables (search on Google) in "PATH":
-    Double-click on PATH in "System Environment Variables".
-    Click on "New"
-    Paste the copied path and click OK.
- </blockquote>
-</details>
-</blockquote>
-
+You need to have [node.js](https://nodejs.org/en).
 
 Clone the project and enter the project folder.
 
@@ -73,7 +46,6 @@ Click on New Applcation and give it a cool name.
 On the **General Information** tab copy the APPLICATION ID and past on the CLIENT_ID variable on .env file, live this example: 
 
   ```.env
-MONGODB_CONNECT=mongodb://localhost:27017/yourDatabaseName
 TOKEN=
 CLIENT_ID=0123456789876543210
   ```
@@ -83,7 +55,6 @@ Copy the `token` to the .env file:
 
 The `.env` file should be like this example:
   ```.env
-MONGODB_CONNECT=mongodb://localhost:27017/yourDatabaseName
 TOKEN=EXAMPLE01234TOKEN
 CLIENT_ID=0123456789876543210
   ```

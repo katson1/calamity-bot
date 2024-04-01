@@ -128,7 +128,6 @@ export class MatchSetup {
     setMode(mode){
         this.mode = mode;
         switch (mode) {
-            case 'Bo1':
             case 'Bo2':
                 this.bans = 4;
                 this.totalWinsToFinish = 1;

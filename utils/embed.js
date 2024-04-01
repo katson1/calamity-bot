@@ -13,7 +13,7 @@ export const getEmbed = () => {
 export const getEmbedDev = () => {
     
     const embed = {
-        color: 0x000000,
+        color: 0x2F4F4F,
         title: '',
         description: '',
         fields: [],

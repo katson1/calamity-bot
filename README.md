@@ -11,7 +11,7 @@ A bot who draft maps and bans for a Heroes Of The Storm [tournament](https://www
   
     * options:
 
-        > The order of teams selections do not affect anything of the match registration.
+        > The sequence in which teams are selected won't impact the game.
         
         - system - Select a match system ex.: (Bo3, Bo5).
         - team1 - Select the first team role from discord server.
@@ -22,7 +22,7 @@ A bot who draft maps and bans for a Heroes Of The Storm [tournament](https://www
 <details>
   <summary> /help </summary>
   
-  - Shows commands info.
+  - Display the command descriptions.
 </details>
 
 

@@ -29,11 +29,11 @@ export const getEmbedGamesFinished = () => {
     
     const embed = {
         color: 0x000000,
-        title: '',
+        title: 'Games finished!',
         description: '',
         fields: [],
         footer: {
-            text: `Games finished`,
+            text: ``,
         },
     };
 

@@ -261,6 +261,11 @@ export default {
                                 game.setWinner(winner);
 
                                 if (matchSetup.team1Controller.wins == matchSetup.totalWinsToFinish || matchSetup.team2Controller.wins == matchSetup.totalWinsToFinish) {
+
+                                    const finalWinner = matchSetup.team1Controller.wins > matchSetup.team2Controller.wins ? matchSetup.team1Controller : matchSetup.team2Controller;
+                                    const gamesFinished = getEmbedGamesFinished();
+                                    gamesFinished.description = `Winner:  ${finalWinner.role}`;
+
                                     await interaction.update({
                                         embeds: [newEmbedRegistration(matchSetup, 2), createGamesEmbed(matchSetup), getEmbedGamesFinished(), getEmbedDev()],
                                         components: []

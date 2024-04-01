@@ -37,9 +37,11 @@ export default {
 
         const matchSetup = new MatchSetup(team1Role, team2Role);
         matchSetup.startBanPhase();
-        var game = new Game();
+        var game = null
+        game = new Game();
         matchSetup.setMode(system);
         var bans = matchSetup.bans;
+        var flag = true;
 
         const joinButton = new ButtonBuilder()
             .setCustomId("join_match")
@@ -61,9 +63,9 @@ export default {
 
         const filter = (i) => ['join_match', 'leave_match'].includes(i.customId);
 
-        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 24000000 });
+        const collectorInicial = interaction.channel.createMessageComponentCollector({ filter, time: 24000000 });
 
-        collector.on('collect', async (i) => {
+        collectorInicial.on('collect', async (i) => {
             const member = await interaction.guild.members.fetch(i.user.id);
 
             let errorMessage = '';
@@ -119,9 +121,9 @@ export default {
                     components: [buttonsRowFPMap]
                 });
 
+                collectorInicial.stop();
                 const filter = (i) => ['join_match', 'leave_match', 'fp', 'map'].includes(i.customId);
                 const collector = interaction.channel.createMessageComponentCollector({ filter, time: 24000000 });
-
                 collector.on('collect', async (i) => {
 
                     if (i.user.id !== chosenTeam.user.id) {
@@ -152,10 +154,9 @@ export default {
                         components: actionRows
                     });
 
+                    collector.stop();
                     const filter = (i) => i.isButton();
-
                     const collectorBans = interaction.channel.createMessageComponentCollector({ filter, time: 24000000 });
-
                     collectorBans.on('collect', async (interaction) => {
 
                         if (matchSetup.banPhaseFlag) {
@@ -211,22 +212,29 @@ export default {
                                 });
                             }
                         } else {
-
-                            var components = getWinnersButtonRows(matchSetup);
-
                             if (game.progress == 3) {
-                                console.log("aq");
+
                                 let fpOrMap = interaction.customId;
-                                console.log(fpOrMap);
                                 if (fpOrMap === 'fpgames') {
-                                    console.log('fp');
-                                } else if (fpOrMap === 'fpgames') {
-                                    console.log('map');
+                                    matchSetup.fpTeam = matchSetup.selecting.role;
+                                    matchSetup.pickingTeam = matchSetup.selecting.user == matchSetup.team1Controller.user ? matchSetup.team2Controller.user : matchSetup.team1Controller.user;
+                                    game.fp = matchSetup.selecting.role;
+                                } else if (fpOrMap === 'mapgames') {
+                                    matchSetup.pickingTeam = matchSetup.selecting.user;
+                                    matchSetup.fpTeam = matchSetup.selecting.user == matchSetup.team1Controller.user ? matchSetup.team2Controller.role : matchSetup.team1Controller.role;
+                                    game.fp = matchSetup.fpTeam;
                                 }
+                                
+
+                                game = new Game();
+                                flag = false;
+
+                                let availableMaps = updateAvailableMapsToPick(maps, matchSetup.team1Controller, matchSetup.team2Controller, matchSetup.games);
+                                let pickMapsRows = generateActionRowsForMaps(availableMaps, ButtonStyle.Success);
 
                                 await interaction.update({
-                                    embeds: [newEmbedRegistration(matchSetup, 2), createGamesEmbed(matchSetup), getEmbedDev()],
-                                    components: []
+                                    embeds: [newEmbedRegistration(matchSetup, 2), createGamesEmbed(matchSetup), createPicksEmbed(matchSetup.pickingTeam), getEmbedDev()],
+                                    components: pickMapsRows
                                 });
                             }
 
@@ -236,11 +244,11 @@ export default {
 
                                 if (matchSetup.team1Controller.role.name === winner) {
                                     winner = matchSetup.team1Controller.role;
-                                    matchSetup.pickingTeam = matchSetup.team2Controller.user;
+                                    matchSetup.selecting = matchSetup.team2Controller;
                                     matchSetup.team1Controller.wins = matchSetup.team1Controller.wins + 1;
                                 } else if (matchSetup.team2Controller.role.name === winner) {
                                     winner = matchSetup.team2Controller.role;
-                                    matchSetup.pickingTeam = matchSetup.team1Controller.user;
+                                    matchSetup.selecting = matchSetup.team1Controller;
                                     matchSetup.team2Controller.wins = matchSetup.team2Controller.wins + 1;
                                 }
                                 game.setWinner(winner);
@@ -250,15 +258,16 @@ export default {
                                         embeds: [newEmbedRegistration(matchSetup, 2), createGamesEmbed(matchSetup), getEmbedGamesFinished(), getEmbedDev()],
                                         components: []
                                     });
+                                    collectorBans.stop();
                                 } else {
                                     await interaction.update({
-                                        embeds: [newEmbedRegistration(matchSetup, 2), createGamesEmbed(matchSetup), getEmbedDev()],
+                                        embeds: [newEmbedRegistration(matchSetup, 2), createGamesEmbed(matchSetup), createLoserDecisionEmbed(matchSetup.selecting.user), getEmbedDev()],
                                         components: [getFpMapButton()]
                                     });
                                 }
                             }
 
-                            if(game.progress == 1) {
+                            if(game.progress == 1 && flag) {
                                 if (interaction.user.id !== matchSetup.pickingTeam.id) {
                                     await interaction.reply({
                                         content: "You are not authorized to do this action at this time!",
@@ -284,6 +293,9 @@ export default {
                                     components: [getWinnersButtonRows(matchSetup)]
                                 });
                             }
+
+                            flag = true;
+
                         }
                     });
                 });
@@ -337,12 +349,12 @@ function createFpMapButton(buttonName, id) {
         return new ButtonBuilder()
         .setCustomId(id)
         .setLabel(buttonName)
-        .setStyle(ButtonStyle.Primary);
+        .setStyle(ButtonStyle.Success);
     }
     return new ButtonBuilder()
         .setCustomId(id)
         .setLabel(buttonName)
-        .setStyle(ButtonStyle.Success);
+        .setStyle(ButtonStyle.Primary);
 }
 
 function getWinnersButtonRows(matchSetup) {
@@ -365,6 +377,13 @@ function createMapBanned(currentBanUser, banned) {
     return bansEmbed;
 }
 
+
+function createLoserDecisionEmbed(currentPickUser) {
+    const pickEmbed = getEmbed();
+    pickEmbed.title = "Loser decision:";
+    pickEmbed.description = `${currentPickUser}, please select:`;
+    return pickEmbed;
+}
 
 function createPicksEmbed(currentPickUser) {
     const pickEmbed = getEmbed();
@@ -402,6 +421,18 @@ function updateAvailableMaps(maps, team1Controller, team2Controller) {
     return availableMaps;
 };
 
+function updateAvailableMapsToPick(maps, team1Controller, team2Controller, games) {
+    let newArray = [];
+    games.forEach((game) => {
+        newArray.push(game.mapPlayed);
+    });
+    const bannedMaps = [...team1Controller.mapsBanned, ...team2Controller.mapsBanned, ...newArray];
+
+    let availableMaps = maps.filter(map => !bannedMaps.includes(map));
+
+    return availableMaps;
+};
+
 const newEmbedRegistration = (matchSetup, description) => {
     const embed = getEmbed();
     embed.title = `Match: **${matchSetup.team1Controller.role.name}** vs **${matchSetup.team2Controller.role.name}**`;
@@ -425,8 +456,8 @@ const newEmbedRegistration = (matchSetup, description) => {
         let mapPickTeam = matchSetup.getTeamMap();
         embed.fields.push(
             { name: `\u200b`, value: ``, inline: false },
-            { name: `Toss coin:`, value: `First Pick: \`${firstPickTeam.role.name} (${firstPickTeam.user.globalName})\``, inline: false },
-            { name: ``, value: `Map: \`${mapPickTeam.role.name} (${mapPickTeam.user.globalName})\``, inline: false },
+            { name: `Toss coin:`, value: `**First Pick:** \`${firstPickTeam.role.name} (${firstPickTeam.user.globalName})\``, inline: false },
+            { name: ``, value: `**Map:** \`${mapPickTeam.role.name} (${mapPickTeam.user.globalName})\``, inline: false },
             { name: `\u200b`, value: ``, inline: false }
         );
     }
@@ -453,16 +484,16 @@ function createGamesEmbed(matchSetup) {
     const gamesEmbed = getEmbed();
     gamesEmbed.title = `Games:`;
     gamesEmbed.description = `${matchSetup.mode}: \`${matchSetup.team1Controller.wins} - ${matchSetup.team2Controller.wins}\``;
-
+    
     matchSetup.games.forEach((game, index) => {
         gamesEmbed.fields.push(
             { name: `\u200b`, value: ``, inline: false  },
-            { name: `Game\` ${index+1}\`:`, value: ``, inline: false  }
+            { name: `Game \`${index+1}\`:`, value: ``, inline: false  }
         );
         if(game.progress == 1 || game.progress == 2){
             gamesEmbed.fields.push(
-                { name: ``, value: `**Map:** ${game.mapPlayed}`, inline: false  },
-                { name: ``, value: `**First Pick:** ${game.fp.name}`, inline: false  }
+                { name: ``, value: `**Map:** \`${game.mapPlayed}\``, inline: false  },
+                { name: ``, value: `**First Pick:** \`${game.fp.name}\``, inline: false  }
             );
         } else {
             gamesEmbed.fields.push(

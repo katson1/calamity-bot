@@ -12,6 +12,7 @@ export class MatchSetup {
         this.fpTeam = null;
         this.mode;
         this.totalWinsToFinish = 0;
+        this.selecting = null;
         this.team1Controller = {
             role: team1Role,
             user: null,

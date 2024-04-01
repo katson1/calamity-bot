@@ -11,7 +11,6 @@ export default {
                 .setRequired(true)
                 .addChoices(
                     { name: 'Best of 1', value: 'Bo1' },
-                    { name: 'Best of 2', value: 'Bo2' },
                     { name: 'Best of 3', value: 'Bo3' },
                     { name: 'Best of 5', value: 'Bo5' },
                     { name: 'Best of 7', value: 'Bo7' }

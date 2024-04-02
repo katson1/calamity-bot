@@ -31,40 +31,12 @@ export class MatchSetup {
         };
     }
 
-    getCheckIfSerieIsComplete(){
-        console.log('checking');
-        if (this.team1Controller.wins == this.totalWinsToFinish) {
-            return team1Controller;
-        }
-        if (this.team2Controller.wins == this.totalWinsToFinish) {
-            return team1Controller;
-        }
-        return false;
-    }
-
-
     startBanPhase() {
         this.banPhaseFlag = true;
     }
 
     startPickPhase() {
         this.banPhaseFlag = false;
-    }
-
-    addMapBan(team, map) {
-        if (team === 1) {
-            this.team1Controller.mapsBanned.push(map);
-        } else if (team === 2) {
-            this.team2Controller.mapsBanned.push(map);
-        }
-    }
-
-    getMapBan(team) {
-        if (team === 1) {
-            return this.team1Controller.mapsBanned;
-        } else if (team === 2) {
-            return this.team2Controller.mapsBanned;
-        }
     }
 
     setUserToTeam(team, user){

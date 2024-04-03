@@ -159,6 +159,10 @@ export default {
                     const collectorBans = interaction.channel.createMessageComponentCollector({ filter, time: 24000000 });
                     collectorBans.on('collect', async (interaction) => {
 
+                        if (matchSetup.isBo7) {
+                            console.log(isBo7);
+                        }
+
                         if (matchSetup.banPhaseFlag) {
 
                             if (interaction.user.id !== matchSetup.currentBanUser.id) {

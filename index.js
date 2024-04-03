@@ -1,11 +1,8 @@
-import startSever from './db.js'
 import { Client, Events, GatewayIntentBits, Collection } from 'discord.js';
 import path from 'path';
 import dotenv from 'dotenv';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-
-startSever();
 
 dotenv.config();
 

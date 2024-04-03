@@ -96,7 +96,6 @@ export const embedMention = (user, system) => {
     });
 }
 
-
 export const newEmbedRegistration = (matchSetup, description) => {
     let embedDescription = description === 1
         ? `Captains, click \`join\` to represent your team.`

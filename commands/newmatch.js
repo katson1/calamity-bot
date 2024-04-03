@@ -6,13 +6,12 @@ import { Game } from '../models/Game.js';
 export default {
     data: new SlashCommandBuilder()
         .setName("newmatch")
-        .setDescription("Start a new match")
+        .setDescription("Initiate a new match")
         .addStringOption(option =>
             option.setName('system')
                 .setDescription('Select the match system')
                 .setRequired(true)
                 .addChoices(
-                    { name: 'Best of 1', value: 'Bo1' },
                     { name: 'Best of 2', value: 'Bo2' },
                     { name: 'Best of 3', value: 'Bo3' },
                     { name: 'Best of 5', value: 'Bo5' },
@@ -21,12 +20,12 @@ export default {
         )
         .addRoleOption(option =>
             option.setName('team_1')
-                .setDescription('Select the first team of the match')
+                .setDescription('Choose the first team of the match')
                 .setRequired(true)
         )
         .addRoleOption(option =>
             option.setName('team_2')
-                .setDescription('Select the second team of the match')
+                .setDescription('Choose the second team of the match')
                 .setRequired(true)
         ),
 
@@ -73,18 +72,18 @@ export default {
             if (i.customId === 'join_match') {
                 if (member.roles.cache.has(team1Role.id)) {
                     if (matchSetup.team1Controller.user) {
-                        errorMessage = 'Team 1 already have a captain.';
+                        errorMessage = 'Team 1 already has a captain!';
                     } else {
                         matchSetup.setUserToTeam(1, i.user);
                     }
                 } else if (member.roles.cache.has(team2Role.id)) {
                     if (matchSetup.team2Controller.user) {
-                        errorMessage = 'Team 2 already have a captain.';
+                        errorMessage = 'Team 2 already has a captain!';
                     } else {
                         matchSetup.setUserToTeam(2, i.user);
                     }
                 } else {
-                    errorMessage = 'You do not have the necessary role to participate!';
+                    errorMessage = 'You do not have the required role to participate!';
                 }
             } else if (i.customId === 'leave_match') {
                 if (matchSetup.team1Controller.user && matchSetup.team1Controller.user.id === i.user.id) {
@@ -92,7 +91,7 @@ export default {
                 } else if (matchSetup.team2Controller.user && matchSetup.team2Controller.user.id === i.user.id) {
                     matchSetup.setUserToTeam(2, null);
                 } else {
-                    errorMessage = 'You are not registered in any team.';
+                    errorMessage = 'You are not registered on any team.';
                 }
             }
 
@@ -128,7 +127,7 @@ export default {
 
                     if (i.user.id !== chosenTeam.user.id) {
                         await i.reply({
-                            content: "You are not authorized to do this action at this time!",
+                            content: 'You are not authorized to perform this action at the moment.',
                             ephemeral: true
                         });
                         return;
@@ -167,7 +166,7 @@ export default {
 
                             if (interaction.user.id !== matchSetup.currentBanUser.id) {
                                 await interaction.reply({
-                                    content: "You are not authorized to do this action at this time!",
+                                    content: 'You are not authorized to perform this action at the moment.',
                                     ephemeral: true
                                 });
                                 return;
@@ -246,7 +245,7 @@ export default {
                                 const member = interaction.guild.members.cache.get(interaction.user.id);
                                 if (!member.roles.cache.some(role => role.name.toLowerCase() === 'adm')) {
                                     await interaction.reply({
-                                        content: "Only an admin can set a winner!",
+                                        content: "Only an administrator can designate a winner!",
                                         ephemeral: true
                                     });
                                     return;
@@ -286,7 +285,7 @@ export default {
                             if(game.progress == 1 && flag) {
                                 if (interaction.user.id !== matchSetup.pickingTeam.id) {
                                     await interaction.reply({
-                                        content: "You are not authorized to do this action at this time!",
+                                        content: 'You are not authorized to perform this action at the moment.',
                                         ephemeral: true
                                     });
                                     return;
@@ -384,7 +383,7 @@ function getWinnersButtonRows(matchSetup) {
 function createStaffEmbed() {
     const staffEmbed = getEmbed();
     staffEmbed.title = '';
-    staffEmbed.description = `Administrators, please select the winner:`;
+    staffEmbed.description = `Administrators, please designate the winner:`;
     return staffEmbed;
 }
 
@@ -466,8 +465,8 @@ const newEmbedRegistration = (matchSetup, description) => {
         embed.description = `Teams ready!`;
     }
 
-    const team1Status = matchSetup.team1Controller.user ? `<@&${matchSetup.team1Controller.role.id}> (captain: <@${matchSetup.team1Controller.user.id}>)` : `<@&${matchSetup.team1Controller.role.id}> (Waiting for member)`;
-    const team2Status = matchSetup.team2Controller.user ? `<@&${matchSetup.team2Controller.role.id}> (captain: <@${matchSetup.team2Controller.user.id}>)` : `<@&${matchSetup.team2Controller.role.id}> (Waiting for member)`;
+    const team1Status = matchSetup.team1Controller.user ? `<@&${matchSetup.team1Controller.role.id}> (captain: <@${matchSetup.team1Controller.user.id}>)` : `<@&${matchSetup.team1Controller.role.id}> (Waiting for captain)`;
+    const team2Status = matchSetup.team2Controller.user ? `<@&${matchSetup.team2Controller.role.id}> (captain: <@${matchSetup.team2Controller.user.id}>)` : `<@&${matchSetup.team2Controller.role.id}> (Waiting for captain)`;
 
     embed.fields.push(
         { name: `\`${matchSetup.mode}\` - bans: \`${matchSetup.bans}\``, value: ``, inline: false },

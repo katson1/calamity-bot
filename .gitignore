@@ -1,6 +1,5 @@
 #config-folders
 node_modules/
-views/
 
 #localfiles
 .env

@@ -36,10 +36,12 @@ export default {
 
         const matchSetup = new MatchSetup(team1Role, team2Role);
         matchSetup.startBanPhase();
-        var game = null
-        game = new Game();
         matchSetup.setMode(system);
         var bans = matchSetup.bans;
+
+        var game = null
+        game = new Game();
+        
         var flag = true;
 
         const joinButton = new ButtonBuilder()

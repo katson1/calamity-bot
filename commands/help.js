@@ -15,7 +15,7 @@ export default {
         helpEmbed.fields.push(
             {
                 name: `**\`/newmatch\`**`,
-                value: `Choose a game mode and assign two teams (Discord roles). The sequence in which teams are selected won't impact the game.`,
+                value: `Select a game mode and assign two teams (Discord roles). If the selected game mode is \`(bo7)\`, designate the \`Upper Finals Winner\` as \`team_1\`.`,
                 inline: false,
             },
             {

@@ -26,5 +26,11 @@ export class Game {
         this.progress = 1;
     }
 
+    bo7(winner){
+        this.mapPlayed = 'Upper Finals Winner';
+        this.winner = winner;
+        this.progress = 3;
+    }
+
 }
 

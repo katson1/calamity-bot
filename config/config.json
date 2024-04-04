@@ -3,5 +3,6 @@
         "Alterac", "Battlefield", "Braxis", "Cursed", "Dragon",
         "Garden", "Hanamura", "Infernal", "Sky",
         "Tomb", "Towers", "Volskaya"
-    ]
-}  
+    ],
+    "bo7": "game"
+}

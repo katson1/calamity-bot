@@ -46,11 +46,18 @@ export const createGamesEmbed = (matchSetup) => {
                 { name: ``, value: `**First Pick:** \`${game.fp.name}\``, inline: false }
             );
         } else {
-            gamesEmbed.fields.push(
-                { name: ``, value: `**Map:** \`${game.mapPlayed}\``, inline: false },
-                { name: ``, value: `**First Pick:** \`${game.fp.name}\``, inline: false },
-                { name: ``, value: `**Winner:** ${game.winner}`, inline: false },
-            );
+            if(game.fp){
+                gamesEmbed.fields.push(
+                    { name: ``, value: `**Map:** \`${game.mapPlayed}\``, inline: false },
+                    { name: ``, value: `**First Pick:** \`${game.fp.name}\``, inline: false },
+                    { name: ``, value: `**Winner:** ${game.winner}`, inline: false },
+                );
+            } else {
+                gamesEmbed.fields.push(
+                    { name: `Upper Finals Winner`, value: ``, inline: false },
+                    { name: ``, value: `**Team 1:** ${game.winner}`, inline: false },
+                );
+            }
         }
     });
 

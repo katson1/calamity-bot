@@ -2,7 +2,7 @@ import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } fro
 import { getEmbed, getEmbedDev, getEmbedGamesFinished, createGamesEmbed, createPicksEmbed, createStaffEmbed, createBansEmbed, createMapBanned, createLoserDecisionEmbed, embedMention, newEmbedRegistration } from "../utils/embed.js";
 import { MatchSetup } from '../models/MatchSetup.js';
 import { Game } from '../models/Game.js';
-import { getMaps } from '../config/config.js';
+import { getBo7, getMaps } from '../config/config.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -39,6 +39,7 @@ export default {
         matchSetup.startBanPhase();
         matchSetup.setMode(system);
         var bans = matchSetup.bans;
+        var bo7 = await getBo7();
 
         var game = null
         game = new Game();
@@ -99,8 +100,19 @@ export default {
             }
 
             if (matchSetup.team1Controller.user && matchSetup.team2Controller.user) {
-                
-                const chosenTeam = Math.random() < 0.5 ? matchSetup.team1Controller : matchSetup.team2Controller;
+
+                let chosenTeam = Math.random() < 0.5 ? matchSetup.team1Controller : matchSetup.team2Controller;
+
+                if (matchSetup.isBo7 && bo7 == 'map') {
+                    chosenTeam = matchSetup.team1Controller;
+                }
+                if (matchSetup.isBo7 && bo7 == 'game') {
+                    const gameBo7 = new Game();
+                    gameBo7.bo7(matchSetup.team1Controller.role);
+                    matchSetup.team1Controller.wins = 1;
+                    matchSetup.games.push(gameBo7);
+                    chosenTeam = matchSetup.team2Controller;
+                }
 
                 const fpButton = new ButtonBuilder()
                     .setCustomId("fp")
@@ -156,10 +168,6 @@ export default {
                     const filter = (i) => i.isButton();
                     const collectorBans = interaction.channel.createMessageComponentCollector({ filter, time: 24000000 });
                     collectorBans.on('collect', async (interaction) => {
-
-                        if (matchSetup.isBo7) {
-                            console.log(isBo7);
-                        }
 
                         if (matchSetup.banPhaseFlag) {
 

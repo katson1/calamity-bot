@@ -2,6 +2,7 @@ import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } fro
 import { getEmbed, getEmbedDev, getEmbedGamesFinished, createGamesEmbed, createPicksEmbed, createStaffEmbed, createBansEmbed, createMapBanned, createLoserDecisionEmbed, embedMention, newEmbedRegistration } from "../utils/embed.js";
 import { MatchSetup } from '../models/MatchSetup.js';
 import { Game } from '../models/Game.js';
+import { getMaps } from '../config/config.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -142,11 +143,7 @@ export default {
 
                     newEmbedRegistration(matchSetup, 2);
 
-                    const maps = [
-                        "Alterac", "Battlefield", "Braxis", "Cursed", "Dragon",
-                        "Garden", "Hanamura", "Infernal", "Sky",
-                        "Tomb", "Towers", "Volskaya"
-                    ];
+                    const maps = await getMaps();
 
                     var actionRows = generateActionRowsForMaps(maps, ButtonStyle.Danger);
 

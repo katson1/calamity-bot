@@ -1,18 +1,18 @@
 import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import { getEmbed, getEmbedDev, getEmbedGamesFinished } from "../utils/embed.js";
+import { getEmbed, getEmbedDev, getEmbedGamesFinished, createGamesEmbed, createPicksEmbed, createStaffEmbed, createBansEmbed, createMapBanned, createLoserDecisionEmbed, embedMention, newEmbedRegistration } from "../utils/embed.js";
 import { MatchSetup } from '../models/MatchSetup.js';
 import { Game } from '../models/Game.js';
+import { getBo7, getMaps } from '../config/config.js';
 
 export default {
     data: new SlashCommandBuilder()
         .setName("newmatch")
-        .setDescription("Start a new match")
+        .setDescription("Initiate a new match")
         .addStringOption(option =>
             option.setName('system')
                 .setDescription('Select the match system')
                 .setRequired(true)
                 .addChoices(
-                    { name: 'Best of 1', value: 'Bo1' },
                     { name: 'Best of 2', value: 'Bo2' },
                     { name: 'Best of 3', value: 'Bo3' },
                     { name: 'Best of 5', value: 'Bo5' },
@@ -21,12 +21,12 @@ export default {
         )
         .addRoleOption(option =>
             option.setName('team_1')
-                .setDescription('Select the first team of the match')
+                .setDescription('Choose the first team of the match')
                 .setRequired(true)
         )
         .addRoleOption(option =>
             option.setName('team_2')
-                .setDescription('Select the second team of the match')
+                .setDescription('Choose the second team of the match')
                 .setRequired(true)
         ),
 
@@ -37,10 +37,13 @@ export default {
 
         const matchSetup = new MatchSetup(team1Role, team2Role);
         matchSetup.startBanPhase();
-        var game = null
-        game = new Game();
         matchSetup.setMode(system);
         var bans = matchSetup.bans;
+        var bo7 = await getBo7();
+
+        var game = null
+        game = new Game();
+
         var flag = true;
 
         const joinButton = new ButtonBuilder()
@@ -73,18 +76,18 @@ export default {
             if (i.customId === 'join_match') {
                 if (member.roles.cache.has(team1Role.id)) {
                     if (matchSetup.team1Controller.user) {
-                        errorMessage = 'Team 1 already have a captain.';
+                        errorMessage = 'Team 1 already has a captain!';
                     } else {
                         matchSetup.setUserToTeam(1, i.user);
                     }
                 } else if (member.roles.cache.has(team2Role.id)) {
                     if (matchSetup.team2Controller.user) {
-                        errorMessage = 'Team 2 already have a captain.';
+                        errorMessage = 'Team 2 already has a captain!';
                     } else {
                         matchSetup.setUserToTeam(2, i.user);
                     }
                 } else {
-                    errorMessage = 'You do not have the necessary role to participate!';
+                    errorMessage = 'You do not have the required role to participate!';
                 }
             } else if (i.customId === 'leave_match') {
                 if (matchSetup.team1Controller.user && matchSetup.team1Controller.user.id === i.user.id) {
@@ -92,13 +95,24 @@ export default {
                 } else if (matchSetup.team2Controller.user && matchSetup.team2Controller.user.id === i.user.id) {
                     matchSetup.setUserToTeam(2, null);
                 } else {
-                    errorMessage = 'You are not registered in any team.';
+                    errorMessage = 'You are not registered on any team.';
                 }
             }
 
             if (matchSetup.team1Controller.user && matchSetup.team2Controller.user) {
-                
-                const chosenTeam = Math.random() < 0.5 ? matchSetup.team1Controller : matchSetup.team2Controller;
+
+                let chosenTeam = Math.random() < 0.5 ? matchSetup.team1Controller : matchSetup.team2Controller;
+
+                if (matchSetup.isBo7 && bo7 == 'map') {
+                    chosenTeam = matchSetup.team1Controller;
+                }
+                if (matchSetup.isBo7 && bo7 == 'game') {
+                    const gameBo7 = new Game();
+                    gameBo7.bo7(matchSetup.team1Controller.role);
+                    matchSetup.team1Controller.wins = 1;
+                    matchSetup.games.push(gameBo7);
+                    chosenTeam = matchSetup.team2Controller;
+                }
 
                 const fpButton = new ButtonBuilder()
                     .setCustomId("fp")
@@ -128,7 +142,7 @@ export default {
 
                     if (i.user.id !== chosenTeam.user.id) {
                         await i.reply({
-                            content: "You are not authorized to do this action at this time!",
+                            content: 'You are not authorized to perform this action at the moment.',
                             ephemeral: true
                         });
                         return;
@@ -141,11 +155,7 @@ export default {
 
                     newEmbedRegistration(matchSetup, 2);
 
-                    const maps = [
-                        "Alterac", "Battlefield", "Braxis", "Cursed", "Dragon",
-                        "Garden", "Hanamura", "Infernal", "Sky",
-                        "Tomb", "Towers", "Volskaya"
-                    ];
+                    const maps = await getMaps();
 
                     var actionRows = generateActionRowsForMaps(maps, ButtonStyle.Danger);
 
@@ -159,15 +169,11 @@ export default {
                     const collectorBans = interaction.channel.createMessageComponentCollector({ filter, time: 24000000 });
                     collectorBans.on('collect', async (interaction) => {
 
-                        if (matchSetup.isBo7) {
-                            console.log(isBo7);
-                        }
-
                         if (matchSetup.banPhaseFlag) {
 
                             if (interaction.user.id !== matchSetup.currentBanUser.id) {
                                 await interaction.reply({
-                                    content: "You are not authorized to do this action at this time!",
+                                    content: 'You are not authorized to perform this action at the moment.',
                                     ephemeral: true
                                 });
                                 return;
@@ -246,7 +252,7 @@ export default {
                                 const member = interaction.guild.members.cache.get(interaction.user.id);
                                 if (!member.roles.cache.some(role => role.name.toLowerCase() === 'adm')) {
                                     await interaction.reply({
-                                        content: "Only an admin can set a winner!",
+                                        content: "Only an administrator can designate a winner!",
                                         ephemeral: true
                                     });
                                     return;
@@ -286,7 +292,7 @@ export default {
                             if(game.progress == 1 && flag) {
                                 if (interaction.user.id !== matchSetup.pickingTeam.id) {
                                     await interaction.reply({
-                                        content: "You are not authorized to do this action at this time!",
+                                        content: 'You are not authorized to perform this action at the moment.',
                                         ephemeral: true
                                     });
                                     return;
@@ -330,15 +336,6 @@ export default {
     }
 }
 
-
-const embedMention = (user, system) => {
-    const embed = getEmbed();
-    const userMention = `<@${user.id}>`;
-    embed.description = `${userMention} have selected: **${system}**`;
-    embed.footer = null;
-    return embed;
-}
-
 function createMapButton(mapName, style) {
     return new ButtonBuilder()
         .setCustomId(mapName.toLowerCase())
@@ -378,42 +375,6 @@ function getWinnersButtonRows(matchSetup) {
     winnersRow.addComponents(createWinnersButton(matchSetup.team1Controller.role.name));
     winnersRow.addComponents(createWinnersButton(matchSetup.team2Controller.role.name));
     return winnersRow;
-}
-
-
-function createStaffEmbed() {
-    const staffEmbed = getEmbed();
-    staffEmbed.title = '';
-    staffEmbed.description = `Administrators, please select the winner:`;
-    return staffEmbed;
-}
-
-function createBansEmbed(currentBanUser) {
-    const bansEmbed = getEmbed();
-    bansEmbed.title = "Map bans";
-    bansEmbed.description = `${currentBanUser}, please select a map to ban:`;
-    return bansEmbed;
-}
-
-function createMapBanned(currentBanUser, banned) {
-    const bansEmbed = getEmbed();
-    bansEmbed.description = `${currentBanUser}, has banned: **${banned}**`;
-    return bansEmbed;
-}
-
-
-function createLoserDecisionEmbed(currentPickUser) {
-    const pickEmbed = getEmbed();
-    pickEmbed.title = "Loser decision:";
-    pickEmbed.description = `${currentPickUser}, please select:`;
-    return pickEmbed;
-}
-
-function createPicksEmbed(currentPickUser) {
-    const pickEmbed = getEmbed();
-    pickEmbed.title = "Map pick:";
-    pickEmbed.description = `${currentPickUser}, please select a map to play:`;
-    return pickEmbed;
 }
 
 function generateActionRowsForMaps(maps, style) {
@@ -456,78 +417,3 @@ function updateAvailableMapsToPick(maps, team1Controller, team2Controller, games
 
     return availableMaps;
 };
-
-const newEmbedRegistration = (matchSetup, description) => {
-    const embed = getEmbed();
-    embed.title = `Match: **${matchSetup.team1Controller.role.name}** vs **${matchSetup.team2Controller.role.name}**`;
-    if (description == 1) {
-        embed.description = `Captains, click \`join\` to represent your team.`;
-    } else {
-        embed.description = `Teams ready!`;
-    }
-
-    const team1Status = matchSetup.team1Controller.user ? `<@&${matchSetup.team1Controller.role.id}> (captain: <@${matchSetup.team1Controller.user.id}>)` : `<@&${matchSetup.team1Controller.role.id}> (Waiting for member)`;
-    const team2Status = matchSetup.team2Controller.user ? `<@&${matchSetup.team2Controller.role.id}> (captain: <@${matchSetup.team2Controller.user.id}>)` : `<@&${matchSetup.team2Controller.role.id}> (Waiting for member)`;
-
-    embed.fields.push(
-        { name: `\`${matchSetup.mode}\` - bans: \`${matchSetup.bans}\``, value: ``, inline: false },
-        { name: 'Team 1', value: team1Status, inline: true },
-        { name: 'Team 2', value: team2Status, inline: true },
-    );
-
-    if (matchSetup.team1Controller.tosscoin_fp || matchSetup.team2Controller.tosscoin_fp) {
-        let firstPickTeam = matchSetup.getTeamFp();
-        let mapPickTeam = matchSetup.getTeamMap();
-        embed.fields.push(
-            { name: `\u200b`, value: ``, inline: false },
-            { name: `Toss coin:`, value: `**First Pick:** \`${firstPickTeam.role.name} (${firstPickTeam.user.globalName})\``, inline: false },
-            { name: ``, value: `**Map:** \`${mapPickTeam.role.name} (${mapPickTeam.user.globalName})\``, inline: false },
-            { name: `\u200b`, value: ``, inline: false }
-        );
-    }
-
-    if (matchSetup.team1Controller.mapsBanned.length > 0) {
-        const mapsBannedString = matchSetup.team1Controller.mapsBanned.join(', ');
-        embed.fields.push(
-            { name: `${matchSetup.team1Controller.role.name} bans:`, value: `\`${mapsBannedString}\``, inline: true  }
-        );
-    }
-
-    if (matchSetup.team2Controller.mapsBanned.length > 0) {
-        const mapsBannedString = matchSetup.team2Controller.mapsBanned.join(', ');
-        embed.fields.push(
-            { name: `${matchSetup.team2Controller.role.name} bans:`, value: `\`${mapsBannedString}\``, inline: true  }
-        );
-        
-    }
-
-    return embed;
-}
-
-function createGamesEmbed(matchSetup) {
-    const gamesEmbed = getEmbed();
-    gamesEmbed.title = `Games:`;
-    gamesEmbed.description = `${matchSetup.mode}: \`${matchSetup.team1Controller.wins} - ${matchSetup.team2Controller.wins}\``;
-    
-    matchSetup.games.forEach((game, index) => {
-        gamesEmbed.fields.push(
-            { name: `\u200b`, value: ``, inline: false  },
-            { name: `Game \`${index+1}\`:`, value: ``, inline: false  }
-        );
-        if(game.progress == 1 || game.progress == 2){
-            gamesEmbed.fields.push(
-                { name: ``, value: `**Map:** \`${game.mapPlayed}\``, inline: false  },
-                { name: ``, value: `**First Pick:** \`${game.fp.name}\``, inline: false  }
-            );
-        } else {
-            gamesEmbed.fields.push(
-                { name: ``, value: `**Map:** \`${game.mapPlayed}\``, inline: false  },
-                { name: ``, value: `**First Pick:** \`${game.fp.name}\``, inline: false  },
-                { name: ``, value: `**Winner:** ${game.winner}`, inline: false  },
-            );
-        }
-    });
-
-    return gamesEmbed;
-}
-

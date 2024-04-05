@@ -47,7 +47,7 @@ export default {
             },
             {
                 name: ``,
-                value: `\`Use the /config command with the value parameter empty to get current configs information.\``,
+                value: `\`To view the current settings, select the setting you wish to inspect, and leave the value option blank.\``,
                 inline: false,
             },
             {

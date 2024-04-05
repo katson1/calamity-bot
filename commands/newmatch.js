@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import { getEmbed, getEmbedDev, getEmbedGamesFinished, createGamesEmbed, createPicksEmbed, createStaffEmbed, createBansEmbed, createMapBanned, createLoserDecisionEmbed, embedMention, newEmbedRegistration } from "../utils/embed.js";
+import { getEmbed, getEmbedDev, getEmbedGamesFinished, createGamesEmbed, createPicksEmbed, createStaffEmbed, createBansEmbed, createMapBanned, createLoserDecisionEmbed, embedMention, newEmbedRegistration, createCancelEmbed } from "../utils/embed.js";
 import { MatchSetup } from '../models/MatchSetup.js';
 import { Game } from '../models/Game.js';
 import { getBo7, getMaps } from '../config/config.js';
@@ -55,8 +55,13 @@ export default {
             .setCustomId("leave_match")
             .setLabel("Leave")
             .setStyle(ButtonStyle.Secondary);
+            
+        const cancelButton = new ButtonBuilder()
+        .setCustomId("cancel_match")
+        .setLabel("Cancel")
+        .setStyle(ButtonStyle.Danger);
 
-        const buttonsRow = new ActionRowBuilder().addComponents(joinButton, leaveButton);
+        const buttonsRow = new ActionRowBuilder().addComponents(joinButton, leaveButton, cancelButton);
 
         await interaction.reply({
             embeds: [embedMention(interaction.user, system), newEmbedRegistration(matchSetup, 1), getEmbedDev()],
@@ -64,7 +69,7 @@ export default {
             fetchReply: true
         });
 
-        const filter = (i) => ['join_match', 'leave_match'].includes(i.customId);
+        const filter = (i) => ['join_match', 'leave_match', 'cancel_match'].includes(i.customId);
 
         const collectorInicial = interaction.channel.createMessageComponentCollector({ filter, time: 24000000 });
 
@@ -72,6 +77,22 @@ export default {
             const member = await interaction.guild.members.fetch(i.user.id);
 
             let errorMessage = '';
+
+            if (i.customId === 'cancel_match') {
+                const memberAdmin = interaction.guild.members.cache.get(interaction.user.id);
+                if (!memberAdmin.roles.cache.some(role => role.name.toLowerCase() === 'adm')) {
+                    await i.reply({
+                        content: "Only an administrator can cancel a match!",
+                        ephemeral: true
+                    });
+                    return;
+                }
+                await i.update({
+                    embeds: [createCancelEmbed()],
+                    components: []
+                });
+                return;
+            }
 
             if (i.customId === 'join_match') {
                 if (member.roles.cache.has(team1Role.id)) {

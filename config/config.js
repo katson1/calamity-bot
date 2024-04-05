@@ -34,6 +34,20 @@ async function modifyBo7(newRule) {
     }
 }
 
+async function modifyRoles(newList) {
+    try {
+        if (newList.length == 0) {
+            newList.push('adm');
+        }
+        const config = await readConfig();
+        config.roles = newList;
+        await fs.writeFile(configPath, JSON.stringify(config, null, 2));
+        console.log('List successfully modified!');
+    } catch (err) {
+        console.error('Error modifying the list:', err);
+    }
+}
+
 async function getMaps() {
     try {
         const config = await readConfig();
@@ -64,4 +78,4 @@ async function getRoles() {
     }
 }
 
-export { getMaps, getBo7, modifyMap, modifyBo7, getRoles };
+export { getMaps, getBo7, getRoles, modifyMap, modifyBo7, modifyRoles };

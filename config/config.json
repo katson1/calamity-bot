@@ -12,8 +12,9 @@
     "Teste3"
   ],
   "roles": [
+    "admin",
     "adm",
-    "admin"
+    "admnistrator"
   ],
   "bo7": "map"
 }

@@ -2,7 +2,7 @@ import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } fro
 import { getEmbed, getEmbedDev, getEmbedGamesFinished, createGamesEmbed, createPicksEmbed, createStaffEmbed, createBansEmbed, createMapBanned, createLoserDecisionEmbed, embedMention, newEmbedRegistration, createCancelEmbed } from "../utils/embed.js";
 import { MatchSetup } from '../models/MatchSetup.js';
 import { Game } from '../models/Game.js';
-import { getBo7, getMaps } from '../config/config.js';
+import { getBo7, getMaps, getRoles } from '../config/config.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -280,9 +280,11 @@ export default {
 
                             if (game.progress == 2) {
                                 const member = interaction.guild.members.cache.get(interaction.user.id);
-                                if (!member.roles.cache.some(role => role.name.toLowerCase() === 'adm')) {
+                                const allowedRoles = await getRoles();
+                        
+                                if (!member.roles.cache.some(role => allowedRoles.includes(role.name.toLowerCase()))) {
                                     await interaction.reply({
-                                        content: "Only an administrator can designate a winner!",
+                                        content: "Only admins roles can set winners!",
                                         ephemeral: true
                                     });
                                     return;

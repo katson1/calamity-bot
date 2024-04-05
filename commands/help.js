@@ -20,16 +20,34 @@ export default {
             },
             {
                 name: `**/config**`,
-                value: `This command allows you to configure or retrieve settings for the bot.
+                value: `This command allows you to configure or retrieve settings for the bot.`,
 
-                To set map preferences, use the setting command followed by the desired maps enclosed in spaces. For example: Sky Alterac Cursed. Each map should be listed separately. Note that maps must be specified by a single name;
+                inline: false,
+            },
+            {
+                name: ``,
+                value: `**Maps:** To change the list of user maps, use the \`maps\` setting and add the maps separated by space in the \`value\`. For example: Sky Alterac Cursed. Each map should be listed separately. Note that maps must be specified by a single name.`,
+                inline: false,
+            },
+            {
+                name: ``,
+                value: `**Bo7:** To change the configuration of the Bo7 system, select the "bo7" setting and use the values below for the value. (If your tournament utilizes the Upper Finals configuration, you can adjust the advantage given to the winning team).
                 
-                Additionally, you can modify the format of the Bo7 system for tournaments. If your tournament utilizes the Upper Finals configuration, you can adjust the advantage given to the winning team.
-                
-                Using the setting Bo7 command, you can specify:
-                
-                **map:** Automatically sets the toss coin winner to team_1.
-                **game:** Sets the first game win to team_1.`,
+                > Using the setting Bo7 command, you can specify:
+                > 
+                > **map:** Automatically sets the toss coin winner to team_1.
+                > **game:** Sets the first game win to team_1.
+                > **none:** Remove bo7 configuration.`,
+                inline: false,
+            },
+            {
+                name: ``,
+                value: `**Roles:** To change the admins role, use the \`roles\` setting and add the maps separated by space in the \`value\`. For example: admin adm staff. Note that roles must be specified by a single name.`,
+                inline: false,
+            },
+            {
+                name: ``,
+                value: `\`Use the /config command with the value parameter empty to get current configs information.\``,
                 inline: false,
             },
             {

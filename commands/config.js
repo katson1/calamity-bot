@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "discord.js";
 import { getEmbed, getEmbedDev } from "../utils/embed.js";
-import { modifyMap, modifyBo7, getRoles, getBo7, getMaps } from "../config/config.js";
+import { modifyMap, modifyBo7, modifyRoles, getRoles, getBo7, getMaps } from "../config/config.js";
 
 export default {
     data: new SlashCommandBuilder()
@@ -13,6 +13,7 @@ export default {
                 .addChoices(
                     { name: 'Maps', value: 'maps' },
                     { name: 'Bo7', value: 'bo7' },
+                    { name: 'Roles', value: 'roles' },
                 )
         )
         .addStringOption(option =>
@@ -65,6 +66,20 @@ export default {
                 }
             );
         }
+        
+        
+        if (setting == 'roles' && value) {
+            const rolesList = value.split(' ')
+            const rolesQuotes = value.replace(/\s+/g, ', ')
+            modifyRoles(rolesList);
+            configEmbed.fields.push(
+                {
+                    name: `Roles updated!`,
+                    value: rolesQuotes,
+                    inline: false,
+                }
+            );
+        }
 
         if (setting == 'maps' && !value) {
             const maps = await getMaps();
@@ -86,6 +101,18 @@ export default {
                 }
             );
         }
+
+        if (setting == 'roles' && !value) {
+            const roles = await getRoles();
+            configEmbed.fields.push(
+                {
+                    name: `Current roles:`,
+                    value: roles.join(", "),
+                    inline: false,
+                }
+            );
+        }
+
         await interaction.reply({ embeds: [configEmbed, devEmbed] });
     }
 };

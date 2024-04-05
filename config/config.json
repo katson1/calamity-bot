@@ -1,8 +1,18 @@
 {
-    "maps": [
-        "Alterac", "Battlefield", "Braxis", "Cursed", "Dragon",
-        "Garden", "Hanamura", "Infernal", "Sky",
-        "Tomb", "Towers", "Volskaya"
-    ],
-    "bo7": "game"
+  "maps": [
+    "Alterac",
+    "Garden",
+    "Cursed",
+    "Battlefield",
+    "Braxis",
+    "Towers",
+    "Tomb",
+    "Teste1",
+    "Teste2",
+    "Teste3"
+  ],
+  "roles": [
+    "adm"
+  ],
+  "bo7": "map"
 }

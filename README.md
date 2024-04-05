@@ -36,7 +36,7 @@ A bot who draft maps and bans for a Heroes Of The Storm [tournament](https://www
     To set map preferences, use the setting command followed by the desired maps enclosed in spaces. For example: Sky Alterac Cursed. Each map should be listed separately. Note that maps must be specified by a single name.
     
     **Bo7 setting instruction:**
-    Additionally, you can modify the format of the Bo7 system for tournaments. If your tournament utilizes the Upper Finals configuration, you can adjust the advantage given to the winning team.
+    Modify the format of the Bo7 system for tournaments. If your tournament utilizes the Upper Finals configuration, you can adjust the advantage given to the winning team.
     
     Using the setting Bo7 command, you can specify:
     

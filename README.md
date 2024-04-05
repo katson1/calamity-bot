@@ -46,6 +46,7 @@ A bot that drafts maps and bans for a Heroes of the Storm [tournament](https://w
     
       - **map:** Automatically sets the toss coin winner to team_1.
       - **game:** Sets the first game win to team_1.
+      - **none:** Remove bo7 configuration.
 </details>
 
 ## 📦 How to use:

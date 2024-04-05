@@ -11,7 +11,7 @@ A bot who draft maps and bans for a Heroes Of The Storm [tournament](https://www
   
     * options:
 
-        > The sequence in which teams are selected won't impact the game.
+        > The sequence in which teams are selected only impact the game when is selected bo7 system, the team_1 will recieve the advantage setted on /config command.
         
         - system - Select a match system ex.: (Bo3, Bo5).
         - team1 - Select the first team role from discord server.
@@ -25,6 +25,24 @@ A bot who draft maps and bans for a Heroes Of The Storm [tournament](https://www
   - Display the command descriptions.
 </details>
 
+<details>
+  <summary> /config </summary>
+  
+  - This command allows you to configure or retrieve settings for the bot.
+
+    To view the current settings, select the setting you want to see, and leave the `value` option empty.
+
+    **Map setting instruction:**
+    To set map preferences, use the setting command followed by the desired maps enclosed in spaces. For example: Sky Alterac Cursed. Each map should be listed separately. Note that maps must be specified by a single name.
+    
+    **Bo7 setting instruction:**
+    Additionally, you can modify the format of the Bo7 system for tournaments. If your tournament utilizes the Upper Finals configuration, you can adjust the advantage given to the winning team.
+    
+    Using the setting Bo7 command, you can specify:
+    
+      - **map:** Automatically sets the toss coin winner to team_1.
+      - **game:** Sets the first game win to team_1.
+</details>
 
 ## 📦 How to use:
 You need to have [node.js](https://nodejs.org/en).

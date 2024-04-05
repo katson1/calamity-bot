@@ -170,12 +170,8 @@ export default {
                         return;
                     }
 
-                    const member = await interaction.guild.members.fetch(i.user.id);
                     const fpmap = i.customId;
-
                     matchSetup.setFirstPickAndMap(fpmap, chosenTeam.user);
-
-                    newEmbedRegistration(matchSetup, 2);
 
                     const maps = await getMaps();
 
@@ -310,7 +306,7 @@ export default {
                                     gamesFinished.description = `Winner:  ${finalWinner.role}`;
 
                                     await interaction.update({
-                                        embeds: [newEmbedRegistration(matchSetup, 2), createGamesEmbed(matchSetup), getEmbedGamesFinished(), getEmbedDev()],
+                                        embeds: [newEmbedRegistration(matchSetup, 2), createGamesEmbed(matchSetup), gamesFinished, getEmbedDev()],
                                         components: []
                                     });
                                     collectorBans.stop();

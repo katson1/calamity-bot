@@ -87,6 +87,7 @@ export default {
                     });
                     return;
                 }
+                collectorInicial.stop();
                 await i.update({
                     embeds: [createCancelEmbed()],
                     components: []
@@ -246,6 +247,15 @@ export default {
                             if (game.progress == 3) {
 
                                 let fpOrMap = interaction.customId;
+
+                                if (interaction.user.id !== matchSetup.selecting.user.id) {
+                                    await interaction.reply({
+                                        content: 'You are not authorized to perform this action at the moment.',
+                                        ephemeral: true
+                                    });
+                                    return;
+                                }
+
                                 if (fpOrMap === 'fpgames') {
                                     matchSetup.fpTeam = matchSetup.selecting.role;
                                     matchSetup.pickingTeam = matchSetup.selecting.user == matchSetup.team1Controller.user ? matchSetup.team2Controller.user : matchSetup.team1Controller.user;
@@ -256,7 +266,6 @@ export default {
                                     game.fp = matchSetup.fpTeam;
                                 }
                                 
-
                                 game = new Game();
                                 flag = false;
 
@@ -289,6 +298,7 @@ export default {
                                     matchSetup.selecting = matchSetup.team1Controller;
                                     matchSetup.team2Controller.wins = matchSetup.team2Controller.wins + 1;
                                 }
+                                
                                 game.setWinner(winner);
 
                                 if (matchSetup.team1Controller.wins == matchSetup.totalWinsToFinish || matchSetup.team2Controller.wins == matchSetup.totalWinsToFinish) {

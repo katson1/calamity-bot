@@ -252,6 +252,8 @@ export default {
                                     return;
                                 }
 
+                                game = new Game();
+
                                 if (fpOrMap === 'fpgames') {
                                     matchSetup.fpTeam = matchSetup.selecting.role;
                                     matchSetup.pickingTeam = matchSetup.selecting.user == matchSetup.team1Controller.user ? matchSetup.team2Controller.user : matchSetup.team1Controller.user;
@@ -261,8 +263,7 @@ export default {
                                     matchSetup.fpTeam = matchSetup.selecting.user == matchSetup.team1Controller.user ? matchSetup.team2Controller.role : matchSetup.team1Controller.role;
                                     game.fp = matchSetup.fpTeam;
                                 }
-                                
-                                game = new Game();
+
                                 flag = false;
 
                                 let availableMaps = updateAvailableMapsToPick(maps, matchSetup.team1Controller, matchSetup.team2Controller, matchSetup.games);

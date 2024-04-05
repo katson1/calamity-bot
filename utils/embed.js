@@ -71,6 +71,12 @@ export const createPicksEmbed = (currentPickUser) => {
     });
 }
 
+export const createCancelEmbed = () => {
+    return createEmbed({
+        title: "Oops... match canceled",
+    });
+}
+
 export const createStaffEmbed = () => {
     return createEmbed({
         description: 'Administrators, please designate the winner:',

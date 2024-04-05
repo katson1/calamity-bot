@@ -22,7 +22,7 @@ A bot who draft maps and bans for a Heroes Of The Storm [tournament](https://www
 <details>
   <summary> /help </summary>
   
-  - Display the command descriptions.
+  - Display the commands descriptions.
 </details>
 
 <details>

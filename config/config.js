@@ -54,4 +54,14 @@ async function getBo7() {
     }
 }
 
-export { getMaps, getBo7, modifyMap, modifyBo7 };
+async function getRoles() {
+    try {
+        const config = await readConfig();
+        return config.roles;
+    } catch (err) {
+        console.error('Error getting the list:', err);
+        return [];
+    }
+}
+
+export { getMaps, getBo7, modifyMap, modifyBo7, getRoles };

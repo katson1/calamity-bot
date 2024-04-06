@@ -8,7 +8,7 @@ A bot that drafts maps and bans for a Heroes of the Storm [tournament](https://w
 <details>
   <summary> /newmatch </summary>
   
-  - Create a new match registration (bans, fist picks and map selection).
+  - Create a new match registration (bans, fist picks and map).
   
     * options:
 

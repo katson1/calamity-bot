@@ -101,6 +101,6 @@ If you encounter any issues or have suggestions for improvements, feel free to c
 [<img src="https://img.shields.io/badge/-Linkedin-0e76a8?style=flat-square&logo=Linkedin&logoColor=white&link=" alt="LinkedIn"/></a>](https://www.linkedin.com/in/katsonmatheus/)
 
 ⭐ If you've made it this far, please consider giving this repository a star! ⭐
- 
+
 ## Author:
 - [Katson](https://github.com/katson1)

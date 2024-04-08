@@ -17,7 +17,6 @@ async function modifyMap(newList) {
         const config = await readConfig();
         config.maps = newList;
         await fs.writeFile(configPath, JSON.stringify(config, null, 2));
-        console.log('List successfully modified!');
     } catch (err) {
         console.error('Error modifying the list:', err);
     }
@@ -28,7 +27,6 @@ async function modifyBo7(newRule) {
         const config = await readConfig();
         config.bo7 = newRule;
         await fs.writeFile(configPath, JSON.stringify(config, null, 2));
-        console.log('List successfully modified!');
     } catch (err) {
         console.error('Error modifying the list:', err);
     }
@@ -42,7 +40,6 @@ async function modifyRoles(newList) {
         const config = await readConfig();
         config.roles = newList;
         await fs.writeFile(configPath, JSON.stringify(config, null, 2));
-        console.log('List successfully modified!');
     } catch (err) {
         console.error('Error modifying the list:', err);
     }

@@ -44,7 +44,7 @@ A bot that drafts maps and bans for a Heroes of the Storm [tournament](https://w
     
     Using the setting Bo7 command, you can specify:
     
-      - **map:** Automatically sets the toss coin winner to team_1.
+      - **map:** Automatically sets the toss coin winner to team_1. (default)
       - **game:** Sets the first game win to team_1.
       - **none:** Remove bo7 configuration.
 </details>

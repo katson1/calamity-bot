@@ -40,7 +40,7 @@ A bot that drafts maps and bans for a Heroes of the Storm [tournament](https://w
     To set admin roles, use the setting command followed by the desired roles enclosed in spaces. For example: admin adm staff. Note that roles must be specified by a single name. (The role named 'adm' serves as the bot's default setting).
     
     **Bo7 setting instruction:**
-    Modify the format of the Bo7 system for tournaments. If your tournament utilizes the Upper Finals configuration, you can adjust the advantage given to the winning team.
+    Modify the format of the Bo7 system for tournaments. If your tournament utilizes the Upper Finals Winner configuration, you can adjust the advantage given to the winning team.
     
     Using the setting Bo7 command, you can specify:
     
@@ -73,7 +73,7 @@ TOKEN=
 CLIENT_ID=0123456789876543210
   ```
 
-Now, on the **Bot** tab, click on "Reset Token" to generate a new `Token`. Remember, it's crucial not to share this token with anyone else.
+Now, on the **Bot** tab, click on "Reset Token" to generate a new `token`. Remember, it's crucial not to share this token with anyone else.
 Copy the `token` to the .env file:
 
 The `.env` file should be like this example:

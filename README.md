@@ -12,7 +12,7 @@ A bot that drafts maps and bans for a Heroes of the Storm [tournament](https://w
   
     * options:
 
-        > The sequence in which teams are selected only impact the game when is selected bo7 system, the team_1 will recieve the advantage setted on /config command.
+        > The sequence in which teams are selected only impact the game when is selected a bo7 system, the team_1 will recieve the advantage setted on /config command.
         
         - system - Select a match system ex.: (Bo3, Bo5).
         - team1 - Select the first team role from discord server.

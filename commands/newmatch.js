@@ -380,24 +380,19 @@ function createWinnersButton(buttonName) {
         .setStyle(ButtonStyle.Success);
 }
 
-function getFpMapButton(){
-    let fpMapRow = new ActionRowBuilder();
+function getFpMapButton() {
+    const fpMapRow = new ActionRowBuilder();
     fpMapRow.addComponents(createFpMapButton('Map', 'mapgames'));
     fpMapRow.addComponents(createFpMapButton('First Pick', 'fpgames'));
     return fpMapRow;
 }
 
 function createFpMapButton(buttonName, id) {
-    if(id == 'fpgames'){
-        return new ButtonBuilder()
-        .setCustomId(id)
-        .setLabel(buttonName)
-        .setStyle(ButtonStyle.Success);
-    }
+    const style = id == 'fpgames' ? ButtonStyle.Success : ButtonStyle.Primary;
     return new ButtonBuilder()
         .setCustomId(id)
         .setLabel(buttonName)
-        .setStyle(ButtonStyle.Primary);
+        .setStyle(style);
 }
 
 function getWinnersButtonRows(matchSetup) {

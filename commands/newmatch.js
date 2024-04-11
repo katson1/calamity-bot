@@ -57,9 +57,9 @@ export default {
             .setStyle(ButtonStyle.Secondary);
             
         const cancelButton = new ButtonBuilder()
-        .setCustomId("cancel_match")
-        .setLabel("Cancel")
-        .setStyle(ButtonStyle.Danger);
+            .setCustomId("cancel_match")
+            .setLabel("Cancel")
+            .setStyle(ButtonStyle.Danger);
 
         const buttonsRow = new ActionRowBuilder().addComponents(joinButton, leaveButton, cancelButton);
 
@@ -373,6 +373,13 @@ function createMapButton(mapName, style) {
         .setStyle(style);
 }
 
+function getWinnersButtonRows(matchSetup) {
+    let winnersRow = new ActionRowBuilder();
+    winnersRow.addComponents(createWinnersButton(matchSetup.team1Controller.role.name));
+    winnersRow.addComponents(createWinnersButton(matchSetup.team2Controller.role.name));
+    return winnersRow;
+}
+
 function createWinnersButton(buttonName) {
     return new ButtonBuilder()
         .setCustomId(buttonName)
@@ -393,13 +400,6 @@ function createFpMapButton(buttonName, id) {
         .setCustomId(id)
         .setLabel(buttonName)
         .setStyle(style);
-}
-
-function getWinnersButtonRows(matchSetup) {
-    let winnersRow = new ActionRowBuilder();
-    winnersRow.addComponents(createWinnersButton(matchSetup.team1Controller.role.name));
-    winnersRow.addComponents(createWinnersButton(matchSetup.team2Controller.role.name));
-    return winnersRow;
 }
 
 function generateActionRowsForMaps(maps, style) {

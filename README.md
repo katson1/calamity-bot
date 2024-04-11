@@ -1,5 +1,5 @@
 # 🤖 Calamity-bot
-A bot that drafts maps and bans for a Heroes of the Storm [tournament](https://www.calamitygaming.com.br/heroes-of-the-storm). 
+A bot that drafts maps and bans for a game (Heroes of the Storm) [tournament](https://www.calamitygaming.com.br/heroes-of-the-storm). 
 
 ![](https://github.com/katson1/calamity-bot/blob/master/utils/assets/preview.gif)
 
@@ -73,8 +73,9 @@ TOKEN=
 CLIENT_ID=0123456789876543210
   ```
 
-Now, on the **Bot** tab, click on "Reset Token" to generate a new `token`. Remember, it's crucial not to share this token with anyone else.
+Now, on the **Bot** tab, click on "Reset Token" to generate a new `token`. 
 Copy the `token` to the .env file:
+> Remember, it's crucial not to share this token with anyone else.
 
 The `.env` file should be like this example:
   ```.env
@@ -97,7 +98,7 @@ Notice: The bot may take up to 5 minutes to register the commands.
 
 > Once it's running, you can add the bot to multiple servers, and it will work seamlessly on all of them.
 
-If you encounter any issues or have suggestions for improvements, feel free to contact me anytime.
+If you encounter any issues or have improvements suggestions, feel free to contact me at any time:
 
 [<img src="https://img.shields.io/badge/-Gmail-FF0000?style=flat-square&labelColor=FF0000&logo=gmail&logoColor=white&link=" alt="Gmail"/></a>](mailto:katson.alves@ccc.ufcg.edu.br)
 [<img src="https://img.shields.io/badge/-Linkedin-0e76a8?style=flat-square&logo=Linkedin&logoColor=white&link=" alt="LinkedIn"/></a>](https://www.linkedin.com/in/katsonmatheus/)

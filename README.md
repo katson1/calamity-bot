@@ -1,5 +1,5 @@
 # 🤖 Calamity-bot
-A bot that drafts maps and bans for a game (Heroes of the Storm) [tournament](https://www.calamitygaming.com.br/heroes-of-the-storm). 
+A Discord bot that drafts maps and bans for a game (Heroes of the Storm) [tournament](https://www.calamitygaming.com.br/heroes-of-the-storm). 
 
 ![](https://github.com/katson1/calamity-bot/blob/master/utils/assets/preview.gif)
 

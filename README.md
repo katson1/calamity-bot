@@ -31,7 +31,7 @@ A Discord bot that drafts maps and bans for a game (Heroes of the Storm) [tourna
   
   - This command allows you to configure or retrieve settings for the bot.
 
-    To view the current settings, select the setting you wish to inspect, and leave the `value` option blank.
+    To view the current settings, select the `setting` you wish to inspect, and leave the `value` option blank.
 
     **Map setting instruction:**
     To set map preferences, use the setting command followed by the desired maps enclosed in spaces. For example: Sky Alterac Cursed. Each map should be listed separately. Note that maps must be specified by a single name.

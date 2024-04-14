@@ -59,7 +59,7 @@ Install required packages into the project:
 npm install
   ```
 
-Now copy the .env.example file to **.env** file to the project:
+Copy the .env.example file to **.env** file to the project:
   ```.bash
 copy .env.example .env
   ```

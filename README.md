@@ -61,7 +61,7 @@ npm install
 
 Copy the .env.example file to **.env** file to the project:
   ```.bash
-copy .env.example .env
+cp .env.example .env
   ```
 
 Now, you need to create a bot in the [discord developer portal](https://discord.com/developers/applications).

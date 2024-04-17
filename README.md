@@ -101,7 +101,7 @@ Notice: The bot may take up to 5 minutes to register the commands.
 If you encounter any issues or have improvements suggestions, feel free to contact me at any time:
 
 [![github](https://skillicons.dev/icons?i=github)](https://github.com/katson1)
-[![discord](https://skillicons.dev/icons?i=discord)](https://discordapp/users/210789016675549184)
+[![discord](https://skillicons.dev/icons?i=discord)](https://discordapp.com/users/210789016675549184)
 [![linkedin](https://skillicons.dev/icons?i=linkedin)](https://www.linkedin.com/in/katsonmatheus/)
 [![gmail](https://skillicons.dev/icons?i=gmail)](mailto:katson.alves@ccc.ufcg.edu.br)
 

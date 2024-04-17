@@ -105,7 +105,5 @@ If you encounter any issues or have improvements suggestions, feel free to conta
 [![linkedin](https://skillicons.dev/icons?i=linkedin)](https://www.linkedin.com/in/katsonmatheus/)
 [![gmail](https://skillicons.dev/icons?i=gmail)](mailto:katson.alves@ccc.ufcg.edu.br)
 
-⭐ If you've made it this far, please consider giving this repository a star! ⭐
-
 ## Author:
 - [Katson](https://github.com/katson1)

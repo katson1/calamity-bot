@@ -73,7 +73,7 @@ TOKEN=
 CLIENT_ID=0123456789876543210
   ```
 
-Now, on the **Bot** tab, click on "Reset Token" to generate a new `token`. 
+Now, at the **Bot** tab, click on "Reset Token" to generate a new `token`. 
 Copy the `token` to the .env file:
 > Remember, it's crucial not to share this token with anyone else.
 

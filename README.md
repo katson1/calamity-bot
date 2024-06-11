@@ -50,7 +50,7 @@ A Discord bot that drafts maps and bans for a game (Heroes of the Storm) [tourna
 </details>
 
 ## 📦 How to use:
-You need to have [node.js](https://nodejs.org/en) installed.
+You need to have [node.js](https://nodejs.org/en) installed and a [Discord](https://discord.com/) account.
 
 Clone the project and enter the project folder.
 

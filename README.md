@@ -44,13 +44,13 @@ A Discord bot that drafts maps and bans for a game (Heroes of the Storm) [tourna
     
     Using the setting Bo7 command, you can specify:
     
-      - **map:** Automatically sets the toss coin winner to team_1. (default)
-      - **game:** Sets the first game win to team_1.
+      - **map:** Automatically sets the toss coin winner to **team_1**. (default)
+      - **game:** Sets the first game win to **team_1**.
       - **none:** Remove bo7 configuration.
 </details>
 
 ## 📦 How to use:
-You need to have [node.js](https://nodejs.org/en) installed.
+You need to have [node.js](https://nodejs.org/en) installed and a [Discord](https://discord.com/) account.
 
 Clone the project and enter the project folder.
 
@@ -59,7 +59,7 @@ Install required packages into the project:
 npm install
   ```
 
-Copy the .env.example file to **.env** file to the project:
+Copy the .env.example file to **.env** file on the project:
   ```.bash
 cp .env.example .env
   ```
@@ -73,7 +73,7 @@ TOKEN=
 CLIENT_ID=0123456789876543210
   ```
 
-Now, on the **Bot** tab, click on "Reset Token" to generate a new `token`. 
+Now, at the **Bot** tab, click on "Reset Token" to generate a new `token`. 
 Copy the `token` to the .env file:
 > Remember, it's crucial not to share this token with anyone else.
 
@@ -85,7 +85,7 @@ CLIENT_ID=0123456789876543210
 
 **THIS IS A VERY IMPORTANT STEP:**
 
-On the 'OAuth2' tab, under the 'OAuth2 URL Generator' session, select **bot** and **applications.commands**. Then, in the 'BOT PERMISSIONS' section, check the **Administrator** checkbox. This will generate the link to add the bot to a server. Simply paste the generated link into your browser to add the bot to your server.
+On the '**OAuth2**' tab, under the '**OAuth2 URL Generator**' session, select **bot** and **applications.commands**. Then, in the 'BOT PERMISSIONS' section, check the **Administrator** checkbox. This will generate the link to add the bot to a server. Simply paste the generated link into your browser to add the bot to your server.
 
 Now, run the command:
    ```js
@@ -98,12 +98,21 @@ Notice: The bot may take up to 5 minutes to register the commands.
 
 > Once it's running, you can add the bot to multiple servers, and it will work seamlessly on all of them.
 
-If you encounter any issues or have improvements suggestions, feel free to contact me at any time:
-
-[<img src="https://img.shields.io/badge/-Gmail-FF0000?style=flat-square&labelColor=FF0000&logo=gmail&logoColor=white&link=" alt="Gmail"/></a>](mailto:katson.alves@ccc.ufcg.edu.br)
-[<img src="https://img.shields.io/badge/-Linkedin-0e76a8?style=flat-square&logo=Linkedin&logoColor=white&link=" alt="LinkedIn"/></a>](https://www.linkedin.com/in/katsonmatheus/)
-
-⭐ If you've made it this far, please consider giving this repository a star! ⭐
-
 ## Author:
-- [Katson](https://github.com/katson1)
+<div align="left">
+  <div>
+    Katson Matheus
+    <a href="https://github.com/katson1">
+      <img src="https://skillicons.dev/icons?i=github" alt="html" height="15" />
+    </a>
+    <a href="https://discordapp.com/users/210789016675549184">
+      <img src="https://skillicons.dev/icons?i=discord" alt="html" height="15"/>
+    </a>
+    <a href="https://www.linkedin.com/in/katsonmatheus/">
+      <img src="https://skillicons.dev/icons?i=linkedin" alt="html" height="15"/>
+    </a>
+    <a href="mailto:katson.alves@ccc.ufcg.edu.br">
+      <img src="https://skillicons.dev/icons?i=gmail" alt="html" height="15"/>
+    </a>
+  </div>
+</div>

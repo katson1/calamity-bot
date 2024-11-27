@@ -54,7 +54,7 @@ You need to have [node.js](https://nodejs.org/en) installed and a [Discord](http
 
 Clone the project and enter the project folder.
 
-Install required packages into the project:
+Install required packages:
   ```bash
 npm install
   ```
